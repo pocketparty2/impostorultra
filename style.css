@@ -64,9 +64,9 @@ button:hover:not(:disabled) {
   color: #fff;
 }
 
-/* GREY MANAGE PACKS BUTTON */
+/* MANAGE WORD PACKS BUTTON (yellowgreen) */
 #managePacksBtn {
-  background: #e6e6e6;
+  background: #ccff33;
   color: #000;
 }
 
