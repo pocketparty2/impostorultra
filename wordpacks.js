@@ -1,20 +1,19 @@
 const WORD_PACKS = {
-  Animals: [
+  "🐾 Animals": [
     { real: "Cat", impostor: "Lion" },
     { real: "Dog", impostor: "Wolf" },
     { real: "Shark", impostor: "Dolphin" }
   ],
-  Food: [
+  "🍎 Food": [
     { real: "Pizza", impostor: "Lasagna" },
     { real: "Apple", impostor: "Pear" },
     { real: "Bread", impostor: "Cake" }
   ],
-  Places: [
+  "🌍 Places": [
     { real: "Beach", impostor: "Desert" },
     { real: "City", impostor: "Town" },
     { real: "Forest", impostor: "Jungle" }
   ]
 };
 
-// All packs enabled by default
 let enabledPacks = Object.keys(WORD_PACKS);
