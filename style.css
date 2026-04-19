@@ -1,77 +1,116 @@
+/* GLOBAL RESET */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+/* LIGHT MODE BASE */
 body {
-  background: #111;
-  color: white;
+  background: #ffffff;
+  color: #000000;
   font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  margin: 0;
 }
 
+/* MAIN CONTAINER */
 #screen {
   text-align: center;
-  width: 90%;
+  width: 95%;
   max-width: 500px;
 }
 
+/* HEADINGS */
 h1, h2, p {
   margin: 10px 0;
+  color: #000;
 }
 
+/* BUTTONS */
 button {
   padding: 15px;
   font-size: 1.2rem;
   margin-top: 10px;
   width: 100%;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
+  background: #ccff33; /* highlighter yellow-green */
+  color: #000;
+  font-weight: bold;
 }
 
 button:hover:not(:disabled) {
-  opacity: 0.85;
+  filter: brightness(0.9);
 }
 
 button:disabled {
-  background: #333 !important;
-  color: #777;
+  background: #ddd !important;
+  color: #888;
   cursor: not-allowed;
 }
 
-/* Player boxes */
-.playerBox {
+/* PLAYER + EQUIPPED PACK BOXES */
+.playerBox,
+.packBox {
   display: inline-block;
-  background: #222;
+  background: #ccff33;
+  color: #000;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin: 5px;
   font-size: 1rem;
+  font-weight: bold;
 }
 
+/* REMOVE BUTTON */
 .removeBtn {
   margin-left: 8px;
-  color: #ff4444;
+  color: #ff3333;
   cursor: pointer;
   font-weight: bold;
 }
 
-/* Word pack buttons */
-#packList button {
+/* WORD PACK BUTTONS IN DROPDOWN */
+#packDropdown button {
   width: auto;
   padding: 10px 15px;
   font-size: 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   display: inline-block;
   margin: 5px;
+  background: #ccff33;
+  color: #000;
+  font-weight: bold;
 }
 
-/* Dropdown panel */
+/* DROPDOWN PANEL */
 #packDropdown {
-  background: #222;
+  background: #f2f2f2;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-top: 10px;
   display: none;
+  border: 2px solid #ccff33;
+}
+
+/* REVEAL WORD STYLING */
+.reveal-word {
+  font-size: 2rem;
+  margin: 20px 0;
+}
+
+/* IMPOSTOR TEXT */
+.impostor {
+  color: #ff3333;
+  font-weight: bold;
 }
