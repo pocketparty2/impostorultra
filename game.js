@@ -116,7 +116,7 @@ function updateStartButton() {
     btn.textContent = "Insufficient players";
   } else {
     btn.disabled = false;
-    btn.style.background = "#2196F3";
+    btn.style.background = "#ff3333";
     btn.textContent = "Start Game";
   }
 }
