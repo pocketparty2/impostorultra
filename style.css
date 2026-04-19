@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #101014;
+  color: white;
+}
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+.card {
+  background: #1d1d28;
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: 20px;
+}
+button, input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+}
+button {
+  cursor: pointer;
+  background: #6b5cff;
+  color: white;
+}
+button:hover { opacity: 0.9; }
+input { background: #2a2a36; color: white; }
+label { display:block; margin-top:12px; }
