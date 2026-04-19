@@ -15,13 +15,17 @@ function start() {
     <button onclick="addPlayer()">Add Player</button>
 
     <h2>Word Packs</h2>
-    <div id="packList"></div>
+    <p id="equippedPacks"></p>
+    <button onclick="togglePackDropdown()">Manage Word Packs</button>
+
+    <div id="packDropdown"></div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
   `;
 
   updatePlayerList();
-  updatePackList();
+  updateEquippedPacks();
+  buildPackDropdown();
   updateStartButton();
 }
 
@@ -34,13 +38,40 @@ function addPlayer() {
   }
 }
 
-function updatePlayerList() {
-  const list = players.map((p, i) => `<p>${i + 1}. ${p}</p>`).join("");
-  document.getElementById("playerList").innerHTML = list || "<p>No players yet</p>";
+function removePlayer(index) {
+  players.splice(index, 1);
+  updatePlayerList();
+  updateStartButton();
 }
 
-function updatePackList() {
-  const container = document.getElementById("packList");
+function updatePlayerList() {
+  const container = document.getElementById("playerList");
+  container.innerHTML = players
+    .map(
+      (p, i) =>
+        `<div class="playerBox">${p} <span class="removeBtn" onclick="removePlayer(${i})">✕</span></div>`
+    )
+    .join("");
+
+  if (players.length === 0) {
+    container.innerHTML = "<p>No players yet</p>";
+  }
+}
+
+function updateEquippedPacks() {
+  document.getElementById("equippedPacks").textContent =
+    enabledPacks.length > 0
+      ? "Equipped: " + enabledPacks.join(", ")
+      : "No packs enabled";
+}
+
+function togglePackDropdown() {
+  const panel = document.getElementById("packDropdown");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+function buildPackDropdown() {
+  const container = document.getElementById("packDropdown");
   container.innerHTML = "";
 
   Object.keys(WORD_PACKS).forEach(pack => {
@@ -48,8 +79,6 @@ function updatePackList() {
     const btn = document.createElement("button");
 
     btn.textContent = pack;
-    btn.style.margin = "5px";
-    btn.style.padding = "10px";
     btn.style.background = enabled ? "#4CAF50" : "#444";
     btn.style.color = "white";
     btn.style.border = "none";
@@ -66,7 +95,9 @@ function togglePack(pack) {
   } else {
     enabledPacks.push(pack);
   }
-  updatePackList();
+
+  buildPackDropdown();
+  updateEquippedPacks();
 }
 
 function updateStartButton() {
