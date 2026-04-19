@@ -59,6 +59,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* RED START BUTTON */
+#startBtn {
+  background: #ff3333;
+  color: #fff;
+}
+
+#startBtn:hover:not(:disabled) {
+  filter: brightness(0.85);
+}
+
 /* PLAYER + EQUIPPED PACK BOXES */
 .playerBox,
 .packBox {
@@ -103,14 +113,3 @@ button:disabled {
   border: 2px solid #ccff33;
 }
 
-/* REVEAL WORD STYLING */
-.reveal-word {
-  font-size: 2rem;
-  margin: 20px 0;
-}
-
-/* IMPOSTOR TEXT */
-.impostor {
-  color: #ff3333;
-  font-weight: bold;
-}
