@@ -44,7 +44,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
-  background: #ccff33; /* accent */
+  background: #ccff33;
   color: #000;
   font-weight: bold;
 }
@@ -60,8 +60,14 @@ button:hover:not(:disabled) {
 }
 
 #startBtn:disabled {
-  background: #ff9999 !important; /* soft red disabled */
+  background: #ff9999 !important;
   color: #fff;
+}
+
+/* GREY MANAGE PACKS BUTTON */
+#managePacksBtn {
+  background: #e6e6e6;
+  color: #000;
 }
 
 /* PLAYER + PACK BOXES (GREY) */
@@ -96,6 +102,12 @@ button:hover:not(:disabled) {
   background: #e6e6e6;
   color: #000;
   font-weight: bold;
+}
+
+/* DARK GREY FOR DISABLED PACKS */
+#packDropdown button.disabledPack {
+  background: #999;
+  color: #000;
 }
 
 /* DROPDOWN PANEL */
