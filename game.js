@@ -17,7 +17,7 @@ function start() {
     <h2>Word Packs</h2>
     <div id="equippedPacks"></div>
 
-    <button id="managePacksBtn" onclick="togglePackDropdown()">📦 Manage Word Packs</button>
+    <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
 
     <div id="packDropdown"></div>
 
@@ -139,7 +139,7 @@ function showRole() {
     screen.innerHTML = `
       <h1>All words assigned</h1>
       <p style="color:#ff3333; font-weight:bold;">
-        (${players[0]}) starts the conversation!
+        ${players[0]} starts the conversation!
       </p>
       <p>Discuss and give clues!</p>
       <button onclick="startReveal()">Reveal Impostor</button>
