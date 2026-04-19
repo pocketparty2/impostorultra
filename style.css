@@ -7,7 +7,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling */
+  overflow: hidden;
 }
 
 /* LIGHT MODE BASE */
@@ -44,7 +44,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
-  background: #ccff33; /* highlighter yellow-green */
+  background: #ccff33; /* accent */
   color: #000;
   font-weight: bold;
 }
@@ -53,27 +53,22 @@ button:hover:not(:disabled) {
   filter: brightness(0.9);
 }
 
-button:disabled {
-  background: #ddd !important;
-  color: #888;
-  cursor: not-allowed;
-}
-
 /* RED START BUTTON */
 #startBtn {
   background: #ff3333;
   color: #fff;
 }
 
-#startBtn:hover:not(:disabled) {
-  filter: brightness(0.85);
+#startBtn:disabled {
+  background: #ff9999 !important; /* soft red disabled */
+  color: #fff;
 }
 
-/* PLAYER + EQUIPPED PACK BOXES */
+/* PLAYER + PACK BOXES (GREY) */
 .playerBox,
 .packBox {
   display: inline-block;
-  background: #ccff33;
+  background: #e6e6e6;
   color: #000;
   padding: 8px 12px;
   border-radius: 10px;
@@ -98,7 +93,7 @@ button:disabled {
   border-radius: 8px;
   display: inline-block;
   margin: 5px;
-  background: #ccff33;
+  background: #e6e6e6;
   color: #000;
   font-weight: bold;
 }
@@ -112,4 +107,3 @@ button:disabled {
   display: none;
   border: 2px solid #ccff33;
 }
-
