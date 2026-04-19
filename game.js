@@ -59,11 +59,18 @@ function updatePlayerList() {
 }
 
 function updateEquippedPacks() {
-  document.getElementById("equippedPacks").textContent =
-    enabledPacks.length > 0
-      ? "Equipped: " + enabledPacks.join(", ")
-      : "No packs enabled";
+  const container = document.getElementById("equippedPacks");
+
+  if (enabledPacks.length === 0) {
+    container.innerHTML = "<p>No packs enabled</p>";
+    return;
+  }
+
+  container.innerHTML = enabledPacks
+    .map(pack => `<div class="packBox">${pack}</div>`)
+    .join("");
 }
+
 
 function togglePackDropdown() {
   const panel = document.getElementById("packDropdown");
