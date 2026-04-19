@@ -1,84 +1,69 @@
-const sets = [
+
+let players = 0;
+let currentPlayer = 1;
+let chosenPair = null;
+let impostorIndex = null;
+let screen = document.getElementById("screen");
+
+function start() {
+  currentPlayer = 1;
+  screen.innerHTML = `
+    <h1>Word Impostor</h1>
+    <p>How many players?</p>
+    <input id="count" type="number" min="3" max="12">
+    <button onclick="setPlayers()">Start</button>
   `;
 }
 
-function addPlayer() {
-  names.push(`Player ${names.length + 1}`);
-  saveNames();
-  renderMenu();
+function setPlayers() {
+  players = parseInt(document.getElementById("count").value);
+
+  chosenPair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+  impostorIndex = Math.floor(Math.random() * players);
+
+  showRole();
 }
 
-function startGame() {
-  const set = sets[Math.floor(Math.random() * sets.length)];
-  const impostor = Math.floor(Math.random() * names.length);
+function showRole() {
+  if (currentPlayer > players) {
+    screen.innerHTML = `
+      <h1>All words assigned</h1>
+      <p>Discuss and give clues!</p>
+      <button onclick="startReveal()">Reveal Impostor</button>
+    `;
+    return;
+  }
 
-  state.roles = names.map((name, i) => ({
-    name,
-    text: i === impostor
-      ? `IMPOSTOR${state.hintOn ? `<br><br>Hint: ${set.hint}` : ""}`
-      : set.word
-  }));
-
-  state.answer = {
-    impostor: names[impostor],
-    word: set.word,
-    hint: set.hint
-  };
-
-  state.idx = 0;
-  state.starter = names[Math.floor(Math.random() * names.length)];
-  passPhone();
-}
-
-function passPhone() {
-  if (state.idx >= state.roles.length) return endScreen();
-
-  const player = state.roles[state.idx];
-
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <h2>Pass phone to ${player.name}</h2>
-      <button onclick="revealRole()">Reveal</button>
-    </div>
+  screen.innerHTML = `
+    <h1>Player ${currentPlayer}</h1>
+    <button onclick="reveal()">Reveal Word</button>
   `;
 }
 
-function revealRole() {
-  const player = state.roles[state.idx];
+function reveal() {
+  const isImpostor = currentPlayer - 1 === impostorIndex;
+  const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <h2>${player.name}</h2>
-      <p>${player.text}</p>
-      <button onclick="nextPlayer()">Next</button>
-    </div>
+  screen.innerHTML = `
+    <h1>Your word:</h1>
+    <h2>${word}</h2>
+    <button onclick="nextPlayer()">Hide</button>
   `;
 }
 
 function nextPlayer() {
-  state.idx++;
-  passPhone();
+  currentPlayer++;
+  showRole();
 }
 
-function endScreen() {
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <h2>${state.starter} starts the conversation!</h2>
-      <button onclick="showResults()">Reveal Results</button>
-      <button onclick="renderMenu()">New Game</button>
-    </div>
+function startReveal() {
+  screen.innerHTML = `
+    <h1>The impostor was:</h1>
+    <h2>Player ${impostorIndex + 1}</h2>
+    <p>Real word: ${chosenPair.real}</p>
+    <p>Impostor word: ${chosenPair.impostor}</p>
+    <button onclick="start()">Play Again</button>
   `;
 }
 
-function showResults() {
-  document.getElementById("app").innerHTML = `
-    <div class="card">
-      <p><strong>Impostor:</strong> ${state.answer.impostor}</p>
-      <p><strong>Word:</strong> ${state.answer.word}</p>
-      <p><strong>Hint:</strong> ${state.answer.hint}</p>
-      <button onclick="renderMenu()">Back</button>
-    </div>
-  `;
-}
-
-renderMenu();
+start();
