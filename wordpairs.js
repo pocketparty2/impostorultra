@@ -1,7 +1,20 @@
-const WORD_PAIRS = [
-  { real: "Cat", impostor: "Lion" },
-  { real: "Beach", impostor: "Desert" },
-  { real: "Pizza", impostor: "Lasagna" },
-  { real: "Car", impostor: "Motorbike" },
-  { real: "Moon", impostor: "Planet" }
-];
+const WORD_PACKS = {
+  Animals: [
+    { real: "Cat", impostor: "Lion" },
+    { real: "Dog", impostor: "Wolf" },
+    { real: "Shark", impostor: "Dolphin" }
+  ],
+  Food: [
+    { real: "Pizza", impostor: "Lasagna" },
+    { real: "Apple", impostor: "Pear" },
+    { real: "Bread", impostor: "Cake" }
+  ],
+  Places: [
+    { real: "Beach", impostor: "Desert" },
+    { real: "City", impostor: "Town" },
+    { real: "Forest", impostor: "Jungle" }
+  ]
+};
+
+// All packs enabled by default
+let enabledPacks = Object.keys(WORD_PACKS);
