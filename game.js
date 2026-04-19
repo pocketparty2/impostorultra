@@ -15,8 +15,9 @@ function start() {
     <button onclick="addPlayer()">Add Player</button>
 
     <h2>Word Packs</h2>
-    <p id="equippedPacks"></p>
-    <button onclick="togglePackDropdown()">Manage Word Packs</button>
+    <div id="equippedPacks"></div>
+
+    <button id="managePacksBtn" onclick="togglePackDropdown()">📦 Manage Word Packs</button>
 
     <div id="packDropdown"></div>
 
@@ -71,7 +72,6 @@ function updateEquippedPacks() {
     .join("");
 }
 
-
 function togglePackDropdown() {
   const panel = document.getElementById("packDropdown");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
@@ -86,9 +86,7 @@ function buildPackDropdown() {
     const btn = document.createElement("button");
 
     btn.textContent = pack;
-    btn.style.background = enabled ? "#4CAF50" : "#444";
-    btn.style.color = "white";
-    btn.style.border = "none";
+    btn.className = enabled ? "" : "disabledPack";
 
     btn.onclick = () => togglePack(pack);
 
@@ -112,7 +110,7 @@ function updateStartButton() {
 
   if (players.length < 3) {
     btn.disabled = true;
-    btn.style.background = "#333";
+    btn.style.background = "#ff9999";
     btn.textContent = "Insufficient players";
   } else {
     btn.disabled = false;
@@ -140,6 +138,9 @@ function showRole() {
   if (currentPlayer >= players.length) {
     screen.innerHTML = `
       <h1>All words assigned</h1>
+      <p style="color:#ff3333; font-weight:bold;">
+        (${players[0]}) starts the conversation!
+      </p>
       <p>Discuss and give clues!</p>
       <button onclick="startReveal()">Reveal Impostor</button>
     `;
@@ -160,7 +161,7 @@ function reveal() {
     <h1>${players[currentPlayer]}</h1>
     ${
       isImpostor
-        ? `<h2 style="color:#ff4444;">You are the IMPOSTOR!</h2>
+        ? `<h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
            <p>Your word is only a <b>hint</b>.</p>`
         : `<p>Your word is:</p>`
     }
