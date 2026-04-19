@@ -5,18 +5,24 @@ let impostorIndex = null;
 let screen = document.getElementById("screen");
 
 function start() {
-  players = [];
   currentPlayer = 0;
 
   screen.innerHTML = `
     <h1>Word Impostor</h1>
-    <div id="playerList"></div>
 
+    <h2>Players</h2>
+    <div id="playerList"></div>
     <button onclick="addPlayer()">Add Player</button>
-    <button onclick="beginGame()" style="margin-top:10px;">Start Game</button>
+
+    <h2>Word Packs</h2>
+    <div id="packList"></div>
+
+    <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
   `;
 
   updatePlayerList();
+  updatePackList();
+  updateStartButton();
 }
 
 function addPlayer() {
@@ -24,6 +30,7 @@ function addPlayer() {
   if (name && name.trim() !== "") {
     players.push(name.trim());
     updatePlayerList();
+    updateStartButton();
   }
 }
 
@@ -32,13 +39,59 @@ function updatePlayerList() {
   document.getElementById("playerList").innerHTML = list || "<p>No players yet</p>";
 }
 
-function beginGame() {
+function updatePackList() {
+  const container = document.getElementById("packList");
+  container.innerHTML = "";
+
+  Object.keys(WORD_PACKS).forEach(pack => {
+    const enabled = enabledPacks.includes(pack);
+    const btn = document.createElement("button");
+
+    btn.textContent = pack;
+    btn.style.margin = "5px";
+    btn.style.padding = "10px";
+    btn.style.background = enabled ? "#4CAF50" : "#444";
+    btn.style.color = "white";
+    btn.style.border = "none";
+
+    btn.onclick = () => togglePack(pack);
+
+    container.appendChild(btn);
+  });
+}
+
+function togglePack(pack) {
+  if (enabledPacks.includes(pack)) {
+    enabledPacks = enabledPacks.filter(p => p !== pack);
+  } else {
+    enabledPacks.push(pack);
+  }
+  updatePackList();
+}
+
+function updateStartButton() {
+  const btn = document.getElementById("startBtn");
+
   if (players.length < 3) {
-    alert("You need at least 3 players!");
+    btn.disabled = true;
+    btn.style.background = "#333";
+    btn.textContent = "Insufficient players";
+  } else {
+    btn.disabled = false;
+    btn.style.background = "#2196F3";
+    btn.textContent = "Start Game";
+  }
+}
+
+function beginGame() {
+  if (enabledPacks.length === 0) {
+    alert("Enable at least one word pack!");
     return;
   }
 
-  chosenPair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+  const pool = enabledPacks.flatMap(pack => WORD_PACKS[pack]);
+  chosenPair = pool[Math.floor(Math.random() * pool.length)];
+
   impostorIndex = Math.floor(Math.random() * players.length);
   currentPlayer = 0;
 
@@ -63,15 +116,14 @@ function showRole() {
 
 function reveal() {
   const isImpostor = currentPlayer === impostorIndex;
-
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
     <h1>${players[currentPlayer]}</h1>
     ${
       isImpostor
-        ? `<h2>You are the <span style="color:#ff4444;">IMPOSTOR</span>!</h2>
-           <p>Your word is a <b>hint</b> related to the real word.</p>`
+        ? `<h2 style="color:#ff4444;">You are the IMPOSTOR!</h2>
+           <p>Your word is only a <b>hint</b>.</p>`
         : `<p>Your word is:</p>`
     }
     <h2>${word}</h2>
@@ -96,4 +148,3 @@ function startReveal() {
   `;
 }
 
-start();
