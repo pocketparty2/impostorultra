@@ -119,3 +119,12 @@ button:hover:not(:disabled) {
   display: none;
   border: 2px solid #ccff33;
 }
+
+/* MAIN MENU BOXES */
+.menuBox {
+  background: #f2f2f2;
+  border: 2px solid #e6e6e6;
+  border-radius: 15px;
+  padding: 15px;
+  margin: 15px 0;
+}
