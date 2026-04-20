@@ -1,5 +1,5 @@
 const WORD_PACKS = {
-  "🍎 Food": [
+  "🍎 Foods & Drinks": [
     { real: "Pizza", impostor: "Slice" },
     { real: "Burger", impostor: "Bun" },
     { real: "Hot Dog", impostor: "Long" },
