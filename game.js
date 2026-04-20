@@ -135,17 +135,22 @@ function beginGame() {
 }
 
 function showRole() {
-  if (currentPlayer >= players.length) {
-    screen.innerHTML = `
-      <h1>All words assigned</h1>
-      <p style="color:#ff3333; font-weight:bold;">
-        ${players[0]} starts the conversation!
-      </p>
-      <p>Discuss and give clues!</p>
-      <button onclick="startReveal()">Reveal Impostor</button>
-    `;
-    return;
-  }
+ if (currentPlayer >= players.length) {
+
+  // Pick a random starter
+  starterPlayer = players[Math.floor(Math.random() * players.length)];
+
+  screen.innerHTML = `
+    <h1>All words assigned</h1>
+    <p style="color:#ff3333; font-weight:bold;">
+      ${starterPlayer} starts the conversation!
+    </p>
+    <p>Discuss and give clues!</p>
+    <button onclick="startReveal()">Reveal Impostor</button>
+  `;
+  return;
+}
+
 
   screen.innerHTML = `
     <h1>${players[currentPlayer]}</h1>
