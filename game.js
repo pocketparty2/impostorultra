@@ -2,6 +2,7 @@ let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
 let impostorIndex = null;
+let starterPlayer = null;
 let screen = document.getElementById("screen");
 
 function start() {
@@ -10,16 +11,18 @@ function start() {
   screen.innerHTML = `
     <h1>Word Impostor</h1>
 
-    <h2>Players</h2>
-    <div id="playerList"></div>
-    <button onclick="addPlayer()">Add Player</button>
+    <div class="menuBox">
+      <h2>Players</h2>
+      <div id="playerList"></div>
+      <button onclick="addPlayer()">Add Player</button>
+    </div>
 
-    <h2>Word Packs</h2>
-    <div id="equippedPacks"></div>
-
-    <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
-
-    <div id="packDropdown"></div>
+    <div class="menuBox">
+      <h2>Word Packs</h2>
+      <div id="equippedPacks"></div>
+      <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
+      <div id="packDropdown"></div>
+    </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
   `;
@@ -135,22 +138,21 @@ function beginGame() {
 }
 
 function showRole() {
- if (currentPlayer >= players.length) {
+  if (currentPlayer >= players.length) {
 
-  // Pick a random starter
-  starterPlayer = players[Math.floor(Math.random() * players.length)];
+    // Pick a random starter
+    starterPlayer = players[Math.floor(Math.random() * players.length)];
 
-  screen.innerHTML = `
-    <h1>All words assigned</h1>
-    <p style="color:#ff3333; font-weight:bold;">
-      ${starterPlayer} starts the conversation!
-    </p>
-    <p>Discuss and give clues!</p>
-    <button onclick="startReveal()">Reveal Impostor</button>
-  `;
-  return;
-}
-
+    screen.innerHTML = `
+      <h1>All words assigned</h1>
+      <p style="color:#ff3333; font-weight:bold;">
+        ${starterPlayer} starts the conversation!
+      </p>
+      <p>Discuss and give clues!</p>
+      <button onclick="startReveal()">Reveal Impostor</button>
+    `;
+    return;
+  }
 
   screen.innerHTML = `
     <h1>${players[currentPlayer]}</h1>
