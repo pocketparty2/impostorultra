@@ -42,7 +42,7 @@ function start() {
         >
         <span class="toggleSlider"></span>
         <span class="settingText">
-          <strong>All Impostors Mode</strong>
+          <strong>😈 Chaos Mode</strong>
           <small>25% chance of everyone being an impostor</small>
         </span>
       </label>
@@ -344,7 +344,7 @@ function nextPlayer() {
 function startReveal() {
   if (allImpostorsThisRound) {
     screen.innerHTML = `
-      <h1>EVERYONE WAS AN IMPOSTOR!</h1>
+      <h1 style="color: #ff3333;">EVERYONE WAS AN IMPOSTOR!</h1>
       <p>All players received the impostor hint.</p>
       <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
       <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
