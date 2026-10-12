@@ -4,6 +4,8 @@ let chosenPair = null;
 let impostorIndex = null;
 let starterPlayer = null;
 let draggedPlayerIndex = null;
+let allImpostorsMode = false;
+let allImpostorsThisRound = false;
 let screen = document.getElementById("screen");
 
 function start() {
@@ -31,6 +33,22 @@ function start() {
     </div>
 
     <div class="menuBox">
+      <h2>Game Settings</h2>
+      <label class="settingToggle">
+        <input
+          type="checkbox"
+          id="allImpostorsToggle"
+          ${allImpostorsMode ? "checked" : ""}
+        >
+        <span class="toggleSlider"></span>
+        <span class="settingText">
+          <strong>All Impostors Mode</strong>
+          <small>25% chance of everyone being an impostor</small>
+        </span>
+      </label>
+    </div>
+
+    <div class="menuBox">
       <h2>Word Packs</h2>
       <div id="equippedPacks"></div>
       <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
@@ -39,6 +57,10 @@ function start() {
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
   `;
+
+  document.getElementById("allImpostorsToggle").addEventListener("change", event => {
+    allImpostorsMode = event.target.checked;
+  });
 
   updatePlayerList();
   updateEquippedPacks();
@@ -135,6 +157,7 @@ function updatePlayerList() {
 
     handle.addEventListener("dragend", () => {
       draggedPlayerIndex = null;
+
       container.querySelectorAll(".playerBox").forEach(box => {
         box.classList.remove("dragging");
       });
@@ -262,9 +285,16 @@ function beginGame() {
   }
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
-  impostorIndex = Math.floor(Math.random() * players.length);
-  currentPlayer = 0;
 
+  allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
+
+  if (allImpostorsThisRound) {
+    impostorIndex = null;
+  } else {
+    impostorIndex = Math.floor(Math.random() * players.length);
+  }
+
+  currentPlayer = 0;
   showRole();
 }
 
@@ -290,7 +320,7 @@ function showRole() {
 }
 
 function reveal() {
-  const isImpostor = currentPlayer === impostorIndex;
+  const isImpostor = allImpostorsThisRound || currentPlayer === impostorIndex;
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
@@ -312,6 +342,17 @@ function nextPlayer() {
 }
 
 function startReveal() {
+  if (allImpostorsThisRound) {
+    screen.innerHTML = `
+      <h1>EVERYONE WAS AN IMPOSTOR!</h1>
+      <p>All players received the impostor hint.</p>
+      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
+      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
+      <button onclick="playAgain()">Play Again</button>
+    `;
+    return;
+  }
+
   screen.innerHTML = `
     <h1>The impostor was:</h1>
     <h2>${escapeHTML(players[impostorIndex])}</h2>
@@ -327,6 +368,7 @@ function playAgain() {
   impostorIndex = null;
   starterPlayer = null;
   draggedPlayerIndex = null;
+  allImpostorsThisRound = false;
 
   start();
 }
