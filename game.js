@@ -497,8 +497,7 @@ function reveal() {
     extraObjectives.push({
       title: "EXTRA OBJECTIVE: JESTER",
       text: "Get voted out to win!",
-      color: "#c084fc",
-      background: "#302044"
+      color: "#cc9900"
     });
   }
 
@@ -506,8 +505,7 @@ function reveal() {
     extraObjectives.push({
       title: "EXTRA OBJECTIVE: BOUNTY HUNTER",
       text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`,
-      color: "#ffd166",
-      background: "#40351b"
+      color: "#7b61ff"
     });
   }
 
@@ -526,7 +524,7 @@ function reveal() {
         <h3 style="margin:0 0 12px;text-align:center;">Your Objective</h3>
         <p style="margin:0;">${mainObjective}</p>
         ${extraObjectives.map(objective => `
-          <div style="margin-top:12px;padding:10px;background:${objective.background};border:1px solid ${objective.color};border-radius:8px;color:#fff;">
+          <div style="margin-top:12px;padding:10px;border:1px solid ${objective.color};border-radius:8px;">
             <p style="margin:0 0 5px;color:${objective.color};font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">★ ${objective.title}</p>
             <p style="margin:0;">${objective.text}</p>
           </div>
