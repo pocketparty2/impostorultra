@@ -6,6 +6,7 @@ let starterPlayer = null;
 let draggedPlayerIndex = null;
 let screen = document.getElementById("screen");
 
+
 function start() {
   currentPlayer = 0;
   draggedPlayerIndex = null;
