@@ -1,4 +1,3 @@
-
 let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
@@ -13,6 +12,7 @@ let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
 let impostorHintsEnabled = true;
 let jesterEnabled = false;
+let roundJesterVotedOut = false;
 let bountyHunterEnabled = false;
 
 let playerStats = {};
@@ -22,6 +22,7 @@ let roundAllImpostors = false;
 let roundDoubleTrouble = false;
 let roundImpostorHintsEnabled = true;
 let roundJesterIndex = null;
+let roundJesterVotedOut = false;
 let roundBountyHunterIndex = null;
 let roundBountyTargetIndex = null;
 let roundBountyHunterWon = false;
@@ -495,14 +496,18 @@ function reveal() {
   if (isJester) {
     extraObjectives.push({
       title: "EXTRA OBJECTIVE: JESTER",
-      text: "Get voted out to win!"
+      text: "Get voted out to win!",
+      color: "#c084fc",
+      background: "#302044"
     });
   }
 
   if (isBountyHunter) {
     extraObjectives.push({
       title: "EXTRA OBJECTIVE: BOUNTY HUNTER",
-      text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`
+      text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`,
+      color: "#ffd166",
+      background: "#40351b"
     });
   }
 
@@ -521,8 +526,8 @@ function reveal() {
         <h3 style="margin:0 0 12px;text-align:center;">Your Objective</h3>
         <p style="margin:0;">${mainObjective}</p>
         ${extraObjectives.map(objective => `
-          <div style="margin-top:12px;padding:10px;background:#26351e;border:1px solid #77bb44;border-radius:8px;color:#fff;">
-            <p style="margin:0 0 5px;color:#ccff77;font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">★ ${objective.title}</p>
+          <div style="margin-top:12px;padding:10px;background:${objective.background};border:1px solid ${objective.color};border-radius:8px;color:#fff;">
+            <p style="margin:0 0 5px;color:${objective.color};font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">★ ${objective.title}</p>
             <p style="margin:0;">${objective.text}</p>
           </div>
         `).join("")}
@@ -583,6 +588,10 @@ function castVote(votedIndex) {
 
   if (roundBountyTargetIndex === votedIndex) {
     roundBountyHunterWon = true;
+  }
+  
+  if (votedJester) {
+    roundJesterVotedOut = true;
   }
 
   if (roundAllImpostors) {
@@ -679,6 +688,13 @@ function castVote(votedIndex) {
 
 function recordWinners(winners, headline, detail) {
   if (roundOutcomeRecorded) return;
+
+  if (roundJesterIndex !== null && !roundJesterVotedOut) {
+    const jesterName = roundPlayers[roundJesterIndex];
+    winners = winners.filter(
+      name => name.trim().toLowerCase() !== jesterName.trim().toLowerCase()
+    );
+  }
 
   if (roundBountyHunterWon && roundBountyHunterIndex !== null) {
     const bountyHunterName = roundPlayers[roundBountyHunterIndex];
