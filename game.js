@@ -2,10 +2,13 @@ let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
 let impostorIndex = null;
+let impostorIndices = [];
 let starterPlayer = null;
 let draggedPlayerIndex = null;
 let allImpostorsMode = false;
 let allImpostorsThisRound = false;
+let doubleTroubleMode = false;
+let doubleTroubleThisRound = false;
 let screen = document.getElementById("screen");
 
 function start() {
@@ -33,7 +36,16 @@ function start() {
     </div>
 
     <div class="menuBox">
+      <h2>Word Packs</h2>
+      <div id="equippedPacks"></div>
+      <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
+      <div id="packDropdown"></div>
+    </div>
+
+    <div class="menuBox">
       <h2>Game Settings</h2>
+      <h3>Impostor Count Settings</h3>
+
       <label class="settingToggle">
         <input
           type="checkbox"
@@ -46,13 +58,19 @@ function start() {
           <small>25% chance of everyone being an impostor</small>
         </span>
       </label>
-    </div>
 
-    <div class="menuBox">
-      <h2>Word Packs</h2>
-      <div id="equippedPacks"></div>
-      <button id="managePacksBtn" onclick="togglePackDropdown()">Manage Word Packs</button>
-      <div id="packDropdown"></div>
+      <label class="settingToggle">
+        <input
+          type="checkbox"
+          id="doubleTroubleToggle"
+          ${doubleTroubleMode ? "checked" : ""}
+        >
+        <span class="toggleSlider"></span>
+        <span class="settingText">
+          <strong>👥 Double Trouble Mode</strong>
+          <small>25% chance of having two impostors</small>
+        </span>
+      </label>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
@@ -60,6 +78,20 @@ function start() {
 
   document.getElementById("allImpostorsToggle").addEventListener("change", event => {
     allImpostorsMode = event.target.checked;
+
+    if (allImpostorsMode) {
+      doubleTroubleMode = false;
+      document.getElementById("doubleTroubleToggle").checked = false;
+    }
+  });
+
+  document.getElementById("doubleTroubleToggle").addEventListener("change", event => {
+    doubleTroubleMode = event.target.checked;
+
+    if (doubleTroubleMode) {
+      allImpostorsMode = false;
+      document.getElementById("allImpostorsToggle").checked = false;
+    }
   });
 
   updatePlayerList();
@@ -287,11 +319,29 @@ function beginGame() {
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
   allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
+  doubleTroubleThisRound =
+    !allImpostorsThisRound &&
+    doubleTroubleMode &&
+    Math.random() < 0.25;
+
+  impostorIndices = [];
 
   if (allImpostorsThisRound) {
     impostorIndex = null;
+  } else if (doubleTroubleThisRound) {
+    const shuffledIndices = players.map((_, index) => index);
+
+    for (let i = shuffledIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledIndices[i], shuffledIndices[j]] =
+        [shuffledIndices[j], shuffledIndices[i]];
+    }
+
+    impostorIndices = shuffledIndices.slice(0, 2);
+    impostorIndex = impostorIndices[0];
   } else {
     impostorIndex = Math.floor(Math.random() * players.length);
+    impostorIndices = [impostorIndex];
   }
 
   currentPlayer = 0;
@@ -320,7 +370,9 @@ function showRole() {
 }
 
 function reveal() {
-  const isImpostor = allImpostorsThisRound || currentPlayer === impostorIndex;
+  const isImpostor =
+    allImpostorsThisRound || impostorIndices.includes(currentPlayer);
+
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
@@ -344,8 +396,21 @@ function nextPlayer() {
 function startReveal() {
   if (allImpostorsThisRound) {
     screen.innerHTML = `
-      <h1 style="color: #ff3333;">EVERYONE WAS AN IMPOSTOR!</h1>
+      <h1 style="color:#ff3333;">EVERYONE WAS AN IMPOSTOR!</h1>
       <p>All players received the impostor hint.</p>
+      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
+      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
+      <button onclick="playAgain()">Play Again</button>
+    `;
+    return;
+  }
+
+  if (doubleTroubleThisRound) {
+    screen.innerHTML = `
+      <h1 style="color:#ff3333;">DOUBLE TROUBLE!</h1>
+      <p>The impostors were:</p>
+      <h2>${escapeHTML(players[impostorIndices[0]])}</h2>
+      <h2>${escapeHTML(players[impostorIndices[1]])}</h2>
       <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
       <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
       <button onclick="playAgain()">Play Again</button>
@@ -366,9 +431,11 @@ function playAgain() {
   currentPlayer = 0;
   chosenPair = null;
   impostorIndex = null;
+  impostorIndices = [];
   starterPlayer = null;
   draggedPlayerIndex = null;
   allImpostorsThisRound = false;
+  doubleTroubleThisRound = false;
 
   start();
 }
