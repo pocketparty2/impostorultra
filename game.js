@@ -72,47 +72,41 @@ function start() {
       <h2 style="margin:0 0 12px;">Game Settings</h2>
 
       <div class="settingsCategory">
-        <button type="button" class="settingsCategoryHeader"
-          aria-expanded="false"
-          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
-          <strong>🎮 Game Modes</strong>
-          <span class="settingsCategoryArrow">＋</span>
+        <button type="button" class="settingsCategoryHeader" aria-expanded="false" aria-controls="settingsGameModes">
+          <span>🎮 Game Modes</span>
+          <span class="settingsCategoryArrow">▼</span>
         </button>
 
-        <div class="settingsCategoryContent" hidden>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
-            <label class="settingToggle">
-              <input type="checkbox" id="allImpostorsToggle"
-                ${allImpostorsMode ? "checked" : ""}>
-              <span class="toggleSlider"></span>
-              <span class="settingText">
-                <strong>😈 Chaos Mode</strong>
-                <small>25% chance: everyone is an impostor</small>
-              </span>
-            </label>
+        <div id="settingsGameModes" class="settingsCategoryContent" hidden>
+          <label class="settingToggle">
+            <input type="checkbox" id="allImpostorsToggle"
+              ${allImpostorsMode ? "checked" : ""}>
+            <span class="toggleSlider"></span>
+            <span class="settingText">
+              <strong>😈 Chaos Mode</strong>
+              <small>25% chance: everyone is an impostor</small>
+            </span>
+          </label>
 
-            <label class="settingToggle">
-              <input type="checkbox" id="doubleTroubleToggle"
-                ${doubleTroubleMode ? "checked" : ""}>
-              <span class="toggleSlider"></span>
-              <span class="settingText">
-                <strong>👥 Double Trouble</strong>
-                <small>25% chance: two impostors</small>
-              </span>
-            </label>
-          </div>
+          <label class="settingToggle">
+            <input type="checkbox" id="doubleTroubleToggle"
+              ${doubleTroubleMode ? "checked" : ""}>
+            <span class="toggleSlider"></span>
+            <span class="settingText">
+              <strong>👥 Double Trouble</strong>
+              <small>25% chance: two impostors</small>
+            </span>
+          </label>
         </div>
       </div>
 
       <div class="settingsCategory">
-        <button type="button" class="settingsCategoryHeader"
-          aria-expanded="false"
-          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
-          <strong>🕵️ Impostor Settings</strong>
-          <span class="settingsCategoryArrow">＋</span>
+        <button type="button" class="settingsCategoryHeader" aria-expanded="false" aria-controls="settingsImpostor">
+          <span>🕵️ Impostor Settings</span>
+          <span class="settingsCategoryArrow">▼</span>
         </button>
 
-        <div class="settingsCategoryContent" hidden>
+        <div id="settingsImpostor" class="settingsCategoryContent" hidden>
           <label class="settingToggle">
             <input type="checkbox" id="impostorHintsToggle"
               ${impostorHintsEnabled ? "checked" : ""}>
@@ -126,73 +120,45 @@ function start() {
       </div>
 
       <div class="settingsCategory">
-        <button type="button" class="settingsCategoryHeader"
-          aria-expanded="false"
-          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
-          <strong>🎭 Special Roles</strong>
-          <span class="settingsCategoryArrow">＋</span>
+        <button type="button" class="settingsCategoryHeader" aria-expanded="false" aria-controls="settingsSpecialRoles">
+          <span>🎭 Special Roles</span>
+          <span class="settingsCategoryArrow">▼</span>
         </button>
 
-        <div class="settingsCategoryContent" hidden>
-          <p style="margin:4px 0 8px;font-size:0.9rem;">
-            Roles are optional and can be enabled independently.
-          </p>
+        <div id="settingsSpecialRoles" class="settingsCategoryContent" hidden>
+          <p style="margin:0 0 8px;font-size:0.9rem;">Roles are optional and can be enabled independently.</p>
 
-          <div class="settingsCategory">
-            <button type="button" class="settingsCategoryHeader"
-              aria-expanded="false"
-              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#e8f8ec;color:#155b2a;padding:10px;margin:6px 0;border-radius:8px;">
-              <strong>🟢 Non-Impostor</strong>
-              <span class="settingsCategoryArrow">＋</span>
-            </button>
+          <div style="margin-top:12px;">
+            <h4 style="margin:4px 0;">🟢 Non-Impostor</h4>
 
-            <div class="settingsCategoryContent" hidden>
-              <label class="settingToggle">
-                <input type="checkbox" id="jesterToggle"
-                  ${jesterEnabled ? "checked" : ""}>
-                <span class="toggleSlider"></span>
-                <span class="settingText">
-                  <strong>🎭 Jester</strong>
-                  <small>Knows the real word; wins if voted out</small>
-                </span>
-              </label>
-            </div>
+            <label class="settingToggle">
+              <input type="checkbox" id="jesterToggle"
+                ${jesterEnabled ? "checked" : ""}>
+              <span class="toggleSlider"></span>
+              <span class="settingText">
+                <strong>🎭 Jester</strong>
+                <small>Knows the real word; wins if voted out</small>
+              </span>
+            </label>
           </div>
 
-          <div class="settingsCategory">
-            <button type="button" class="settingsCategoryHeader"
-              aria-expanded="false"
-              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#ffe8e8;color:#8b2020;padding:10px;margin:6px 0;border-radius:8px;">
-              <strong>🔴 Impostor</strong>
-              <span class="settingsCategoryArrow">＋</span>
-            </button>
-
-            <div class="settingsCategoryContent" hidden>
-              <p style="font-size:0.85rem;margin:4px 0;">
-                No roles available yet.
-              </p>
-            </div>
+          <div style="margin-top:12px;">
+            <h4 style="margin:4px 0;">🔴 Impostor</h4>
+            <p style="font-size:0.85rem;margin:4px 0;">No roles available yet.</p>
           </div>
 
-          <div class="settingsCategory">
-            <button type="button" class="settingsCategoryHeader"
-              aria-expanded="false"
-              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#eee8ff;color:#49358b;padding:10px;margin:6px 0;border-radius:8px;">
-              <strong>🟣 Both</strong>
-              <span class="settingsCategoryArrow">＋</span>
-            </button>
+          <div style="margin-top:12px;">
+            <h4 style="margin:4px 0;">🟣 Both</h4>
 
-            <div class="settingsCategoryContent" hidden>
-              <label class="settingToggle">
-                <input type="checkbox" id="bountyHunterToggle"
-                  ${bountyHunterEnabled ? "checked" : ""}>
-                <span class="toggleSlider"></span>
-                <span class="settingText">
-                  <strong>🎯 Bounty Hunter</strong>
-                  <small>Wins if their secret target is voted out</small>
-                </span>
-              </label>
-            </div>
+            <label class="settingToggle">
+              <input type="checkbox" id="bountyHunterToggle"
+                ${bountyHunterEnabled ? "checked" : ""}>
+              <span class="toggleSlider"></span>
+              <span class="settingText">
+                <strong>🎯 Bounty Hunter</strong>
+                <small>Wins if their secret target is voted out</small>
+              </span>
+            </label>
           </div>
         </div>
       </div>
@@ -203,17 +169,16 @@ function start() {
 
   document.querySelectorAll(".settingsCategoryHeader").forEach(header => {
     header.addEventListener("click", () => {
-      const content = header.nextElementSibling;
-      const expanded = header.getAttribute("aria-expanded") === "true";
+      const content = document.getElementById(
+        header.getAttribute("aria-controls")
+      );
 
-      header.setAttribute("aria-expanded", String(!expanded));
-      content.hidden = expanded;
+      if (!content) return;
 
-      const arrow = header.querySelector(".settingsCategoryArrow");
+      const isExpanded = header.getAttribute("aria-expanded") === "true";
 
-      if (arrow) {
-        arrow.textContent = expanded ? "＋" : "−";
-      }
+      header.setAttribute("aria-expanded", String(!isExpanded));
+      content.hidden = isExpanded;
     });
   });
 
@@ -276,8 +241,10 @@ function addPlayer() {
 
   players.push(name);
   ensurePlayerStats(name);
+
   input.value = "";
   error.textContent = "";
+
   updatePlayerList();
   updateStartButton();
   input.focus();
@@ -287,6 +254,7 @@ function removePlayer(index) {
   if (index < 0 || index >= players.length) return;
 
   players.splice(index, 1);
+
   updatePlayerList();
   updateStartButton();
 }
@@ -314,21 +282,28 @@ function updatePlayerList() {
   }
 
   container.querySelectorAll(".removeBtn").forEach(button => {
-    button.addEventListener("click", () => removePlayer(Number(button.dataset.remove)));
+    button.addEventListener("click", () => {
+      removePlayer(Number(button.dataset.remove));
+    });
   });
 
   container.querySelectorAll(".dragHandle").forEach(handle => {
     handle.addEventListener("dragstart", event => {
       const box = handle.closest(".playerBox");
+
       draggedPlayerIndex = Number(box.dataset.index);
       event.dataTransfer.effectAllowed = "move";
       event.dataTransfer.setData("text/plain", String(draggedPlayerIndex));
+
       box.classList.add("dragging");
     });
 
     handle.addEventListener("dragend", () => {
       draggedPlayerIndex = null;
-      container.querySelectorAll(".playerBox").forEach(box => box.classList.remove("dragging"));
+
+      container.querySelectorAll(".playerBox").forEach(box => {
+        box.classList.remove("dragging");
+      });
     });
   });
 
@@ -344,11 +319,18 @@ function updatePlayerList() {
       const fromIndex = draggedPlayerIndex;
       const toIndex = Number(box.dataset.index);
 
-      if (fromIndex === null || fromIndex < 0 ||
-          fromIndex >= players.length || fromIndex === toIndex) return;
+      if (
+        fromIndex === null ||
+        fromIndex < 0 ||
+        fromIndex >= players.length ||
+        fromIndex === toIndex
+      ) {
+        return;
+      }
 
       const movedPlayer = players.splice(fromIndex, 1)[0];
       players.splice(toIndex, 0, movedPlayer);
+
       draggedPlayerIndex = null;
       updatePlayerList();
     });
@@ -367,27 +349,35 @@ function escapeHTML(text) {
 
 function updateEquippedPacks() {
   const container = document.getElementById("equippedPacks");
+
   if (!container) return;
 
   container.innerHTML = enabledPacks.length
-    ? enabledPacks.map(pack => `<div class="packBox">${escapeHTML(pack)}</div>`).join("")
+    ? enabledPacks.map(pack =>
+        `<div class="packBox">${escapeHTML(pack)}</div>`
+      ).join("")
     : "<p>No packs enabled</p>";
 }
 
 function togglePackDropdown() {
   const panel = document.getElementById("packDropdown");
-  panel.style.display = panel.style.display === "none" ? "block" : "none";
+
+  panel.style.display =
+    panel.style.display === "none" ? "block" : "none";
 }
 
 function buildPackDropdown() {
   const container = document.getElementById("packDropdown");
+
   container.innerHTML = "";
 
   Object.keys(WORD_PACKS).forEach(pack => {
     const btn = document.createElement("button");
+
     btn.textContent = pack;
     btn.className = enabledPacks.includes(pack) ? "" : "disabledPack";
     btn.onclick = () => togglePack(pack);
+
     container.appendChild(btn);
   });
 }
@@ -405,12 +395,14 @@ function togglePack(pack) {
 
 function updateStartButton() {
   const btn = document.getElementById("startBtn");
+
   if (!btn) return;
 
   if (players.length < 3) {
     btn.disabled = true;
     btn.style.background = "#ff9999";
-    btn.textContent = `Need ${3 - players.length} more player${players.length === 2 ? "" : "s"}`;
+    btn.textContent =
+      `Need ${3 - players.length} more player${players.length === 2 ? "" : "s"}`;
   } else {
     btn.disabled = false;
     btn.style.background = "#ff3333";
@@ -453,9 +445,13 @@ function beginGame() {
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
-  allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
-  doubleTroubleThisRound = !allImpostorsThisRound &&
-    doubleTroubleMode && Math.random() < 0.25;
+  allImpostorsThisRound =
+    allImpostorsMode && Math.random() < 0.25;
+
+  doubleTroubleThisRound =
+    !allImpostorsThisRound &&
+    doubleTroubleMode &&
+    Math.random() < 0.25;
 
   impostorIndices = [];
 
@@ -466,7 +462,9 @@ function beginGame() {
 
     for (let i = shuffledIndices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
+
+      [shuffledIndices[i], shuffledIndices[j]] =
+        [shuffledIndices[j], shuffledIndices[i]];
     }
 
     impostorIndices = shuffledIndices.slice(0, 2);
@@ -488,7 +486,9 @@ function beginGame() {
 
 function showRole() {
   if (currentPlayer >= roundPlayers.length) {
-    starterPlayer = roundPlayers[Math.floor(Math.random() * roundPlayers.length)];
+    starterPlayer =
+      roundPlayers[Math.floor(Math.random() * roundPlayers.length)];
+
     showVotingScreen();
     return;
   }
@@ -503,17 +503,23 @@ function showRole() {
 }
 
 function reveal() {
-  const isImpostor = roundAllImpostors ||
+  const isImpostor =
+    roundAllImpostors ||
     roundImpostorIndices.includes(currentPlayer);
+
   const isJester = roundJesterIndex === currentPlayer;
   const isBountyHunter = roundBountyHunterIndex === currentPlayer;
 
   const teamName = isImpostor ? "IMPOSTOR" : "INNOCENT";
-  const teamColor = isImpostor ? ROLE_COLORS.impostor : ROLE_COLORS.innocent;
+  const teamColor = isImpostor
+    ? ROLE_COLORS.impostor
+    : ROLE_COLORS.innocent;
 
   const specificRoles = [];
+
   if (isJester) specificRoles.push("Jester");
   if (isBountyHunter) specificRoles.push("Bounty Hunter");
+
   const specificRoleText = specificRoles.length
     ? specificRoles.join(" + ")
     : "None";
@@ -536,30 +542,42 @@ function reveal() {
   if (roundAllImpostors) {
     mainObjective = "Avoid being voted out to win!";
   } else if (isImpostor) {
-    mainObjective = "Blend in with the innocents and avoid being voted out!";
+    mainObjective =
+      "Blend in with the innocents and avoid being voted out!";
   } else {
     mainObjective = "Find and vote out the impostor to win!";
   }
 
-  const extraObjectives = getSpecialObjectives(isJester, isBountyHunter);
+  const extraObjectives =
+    getSpecialObjectives(isJester, isBountyHunter);
 
   screen.innerHTML = `
     <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;padding:20px;">
       <p style="margin:0 0 6px;font-size:0.85rem;letter-spacing:2px;">YOUR TEAM</p>
+
       <h1 style="margin:0 0 10px;color:${teamColor};">${teamName}</h1>
-      <p style="margin:0 0 20px;font-size:0.95rem;">Specific Role: <strong>${escapeHTML(specificRoleText)}</strong></p>
+
+      <p style="margin:0 0 20px;font-size:0.95rem;">
+        Specific Role: <strong>${escapeHTML(specificRoleText)}</strong>
+      </p>
 
       <div style="background:#f3f3f3;color:#111;border-radius:12px;padding:16px;margin-bottom:12px;">
-        <p style="font-size:0.8rem;font-weight:bold;letter-spacing:1px;margin:0 0 8px;">${wordLabel}</p>
+        <p style="font-size:0.8rem;font-weight:bold;letter-spacing:1px;margin:0 0 8px;">
+          ${wordLabel}
+        </p>
         <h2 style="margin:0;overflow-wrap:anywhere;">${wordContent}</h2>
       </div>
 
       <div style="border:1px solid #ccc;border-radius:12px;padding:14px;margin-bottom:18px;text-align:left;">
         <h3 style="margin:0 0 12px;text-align:center;">Your Objective</h3>
+
         <p style="margin:0;">${mainObjective}</p>
+
         ${extraObjectives.map(objective => `
           <div style="margin-top:12px;padding:10px;border:1px solid ${objective.color};border-radius:8px;">
-            <p style="margin:0 0 5px;color:${objective.color};font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">★ ${objective.title}</p>
+            <p style="margin:0 0 5px;color:${objective.color};font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">
+              ★ ${objective.title}
+            </p>
             <p style="margin:0;">${objective.text}</p>
           </div>
         `).join("")}
@@ -584,7 +602,8 @@ function showVotingScreen(message = "") {
     return `
       <button onclick="castVote(${index})" ${alreadyRevealed ? "disabled" : ""}
         style="display:block;width:100%;margin:8px 0;${alreadyRevealed
-          ? "background:#bdbdbd;color:#555;cursor:not-allowed;" : ""}">
+          ? "background:#bdbdbd;color:#555;cursor:not-allowed;"
+          : ""}">
         ${escapeHTML(name)}${alreadyRevealed ? " - IMPOSTOR REVEALED" : ""}
       </button>
     `;
@@ -602,7 +621,11 @@ function showVotingScreen(message = "") {
     <div class="menuBox" style="margin-top:20px;">
       <h2>🗳️ Vote Out a Player</h2>
       <p>Select the person the group voted for.</p>
-      ${message ? `<p style="color:#ff3333;font-weight:bold;">${escapeHTML(message)}</p>` : ""}
+
+      ${message
+        ? `<p style="color:#ff3333;font-weight:bold;">${escapeHTML(message)}</p>`
+        : ""}
+
       <div id="votingButtons">${voteButtons}</div>
     </div>
   `;
@@ -614,20 +637,26 @@ function castVote(votedIndex) {
   if (revealedImpostors.includes(votedIndex)) return;
 
   const votedName = roundPlayers[votedIndex];
-  const votedIsImpostor = roundAllImpostors ||
+
+  const votedIsImpostor =
+    roundAllImpostors ||
     roundImpostorIndices.includes(votedIndex);
+
   const votedJester = roundJesterIndex === votedIndex;
 
   handleSpecialRoleVote(votedIndex);
 
   if (roundAllImpostors) {
-    const winners = roundPlayers.filter((_, index) => index !== votedIndex);
+    const winners = roundPlayers.filter(
+      (_, index) => index !== votedIndex
+    );
 
     recordWinners(
       winners,
       `${votedName} was voted out!`,
       "Everyone except the voted-out player wins."
     );
+
     return;
   }
 
@@ -639,6 +668,7 @@ function castVote(votedIndex) {
         showVotingScreen(
           `${votedName} was an impostor! There's another impostor still in the game. Vote again!`
         );
+
         return;
       }
 
@@ -651,10 +681,13 @@ function castVote(votedIndex) {
         "Both impostors were discovered!",
         "The players win!"
       );
+
       return;
     }
 
-    const winners = roundImpostorIndices.map(index => roundPlayers[index]);
+    const winners = roundImpostorIndices.map(
+      index => roundPlayers[index]
+    );
 
     if (votedJester) {
       winners.push(votedName);
@@ -686,7 +719,9 @@ function castVote(votedIndex) {
       "The players win!"
     );
   } else {
-    const winners = roundImpostorIndices.map(index => roundPlayers[index]);
+    const winners = roundImpostorIndices.map(
+      index => roundPlayers[index]
+    );
 
     if (votedJester) {
       winners.push(votedName);
@@ -714,10 +749,13 @@ function recordWinners(winners, headline, detail) {
   roundOutcomeRecorded = true;
   votingFinished = true;
 
-  const winnerKeys = new Set(winners.map(name => name.trim().toLowerCase()));
+  const winnerKeys = new Set(
+    winners.map(name => name.trim().toLowerCase())
+  );
 
   roundPlayers.forEach(name => {
     const key = name.trim().toLowerCase();
+
     ensurePlayerStats(name);
 
     if (winnerKeys.has(key)) {
@@ -759,13 +797,15 @@ function showResults(headline, detail, winners) {
     `;
   }
 
-  const { jesterReveal, bountyHunterReveal } = buildSpecialRoleResults(winners);
+  const { jesterReveal, bountyHunterReveal } =
+    buildSpecialRoleResults(winners);
 
   screen.innerHTML = `
     <div style="text-align:center;margin:10px 0 24px;">
       <p style="font-size:0.9rem;font-weight:bold;letter-spacing:2px;margin-bottom:8px;">
         ROUND OVER
       </p>
+
       <h1 style="font-size:2rem;margin:0 0 12px;">${escapeHTML(headline)}</h1>
       <p style="font-size:1.05rem;margin:0;">${escapeHTML(detail)}</p>
     </div>
@@ -776,11 +816,13 @@ function showResults(headline, detail, winners) {
 
     <div class="menuBox" style="margin-top:16px;text-align:center;">
       <h2 style="margin-top:0;">📝 The Words</h2>
+
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;min-width:120px;background:#f0f0f0;padding:14px;border-radius:10px;">
           <p style="margin:0 0 6px;font-size:0.8rem;color:#555;">REAL WORD</p>
           <h3 style="margin:0;">${escapeHTML(chosenPair.real)}</h3>
         </div>
+
         <div style="flex:1;min-width:120px;background:#ffe5e5;padding:14px;border-radius:10px;">
           <p style="margin:0 0 6px;font-size:0.8rem;color:#a00;">IMPOSTOR HINT</p>
           <h3 style="margin:0;">${escapeHTML(chosenPair.impostor)}</h3>
@@ -790,6 +832,7 @@ function showResults(headline, detail, winners) {
 
     <div class="menuBox" style="margin-top:16px;text-align:center;">
       <h2 style="margin-top:0;">🏆 Winning Players</h2>
+
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
         ${winners.length
           ? winners.map(name => `
@@ -830,14 +873,18 @@ function toggleStats() {
   if (!panel || !button) return;
 
   statsExpanded = !statsExpanded;
+
   panel.style.display = statsExpanded ? "block" : "none";
-  button.textContent = statsExpanded ? "Hide Stats & Streaks" : "Stats & Streaks";
+  button.textContent = statsExpanded
+    ? "Hide Stats & Streaks"
+    : "Stats & Streaks";
 
   if (statsExpanded) updateStatsTable();
 }
 
 function updateStatsTable() {
   const container = document.getElementById("statsTableContainer");
+
   if (!container) return;
 
   const entries = Object.values(playerStats);
@@ -862,6 +909,7 @@ function updateStatsTable() {
           <th style="padding:10px;border-bottom:2px solid #888;">Streak</th>
         </tr>
       </thead>
+
       <tbody>
         ${entries.map(player => `
           <tr>
