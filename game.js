@@ -9,11 +9,36 @@ let allImpostorsMode = false;
 let allImpostorsThisRound = false;
 let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
+
+let playerStats = {};
+let roundPlayers = [];
+let roundImpostorIndices = [];
+let roundAllImpostors = false;
+let roundDoubleTrouble = false;
+let roundOutcomeRecorded = false;
+let statsExpanded = false;
+
 let screen = document.getElementById("screen");
+
+function ensurePlayerStats(name) {
+  const key = name.trim().toLowerCase();
+
+  if (!playerStats[key]) {
+    playerStats[key] = {
+      name: name,
+      wins: 0,
+      streak: 0
+    };
+  } else {
+    playerStats[key].name = name;
+  }
+}
 
 function start() {
   currentPlayer = 0;
   draggedPlayerIndex = null;
+
+  players.forEach(ensurePlayerStats);
 
   screen.innerHTML = `
     <h1>Word Impostor</h1>
@@ -124,6 +149,8 @@ function addPlayer() {
   }
 
   players.push(name);
+  ensurePlayerStats(name);
+
   input.value = "";
   error.textContent = "";
 
@@ -316,6 +343,12 @@ function beginGame() {
     return;
   }
 
+  players.forEach(ensurePlayerStats);
+
+  roundPlayers = [...players];
+  roundOutcomeRecorded = false;
+  statsExpanded = false;
+
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
   allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
@@ -343,6 +376,10 @@ function beginGame() {
     impostorIndex = Math.floor(Math.random() * players.length);
     impostorIndices = [impostorIndex];
   }
+
+  roundImpostorIndices = [...impostorIndices];
+  roundAllImpostors = allImpostorsThisRound;
+  roundDoubleTrouble = doubleTroubleThisRound;
 
   currentPlayer = 0;
   showRole();
@@ -394,36 +431,183 @@ function nextPlayer() {
 }
 
 function startReveal() {
+  let resultContent = "";
+
   if (allImpostorsThisRound) {
-    screen.innerHTML = `
+    resultContent = `
       <h1 style="color:#ff3333;">EVERYONE WAS AN IMPOSTOR!</h1>
       <p>All players received the impostor hint.</p>
-      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
-      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-      <button onclick="playAgain()">Play Again</button>
     `;
-    return;
-  }
-
-  if (doubleTroubleThisRound) {
-    screen.innerHTML = `
+  } else if (doubleTroubleThisRound) {
+    resultContent = `
       <h1 style="color:#ff3333;">DOUBLE TROUBLE!</h1>
       <p>The impostors were:</p>
-      <h2>${escapeHTML(players[impostorIndices[0]])}</h2>
-      <h2>${escapeHTML(players[impostorIndices[1]])}</h2>
-      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
-      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-      <button onclick="playAgain()">Play Again</button>
+      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
+      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[1]])}</h2>
     `;
+  } else {
+    resultContent = `
+      <h1>The impostor was:</h1>
+      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
+    `;
+  }
+
+  resultContent += `
+    <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
+    <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
+  `;
+
+  showResults(resultContent);
+}
+
+function showResults(resultContent) {
+  screen.innerHTML = `
+    ${resultContent}
+
+    <div class="menuBox" style="margin-top:20px;">
+      <h3>Who won this round?</h3>
+      <p style="font-size:0.9rem;">
+        Record the outcome to update everyone's wins and streaks.
+      </p>
+      <div id="outcomeButtons">
+        <button onclick="recordOutcome('impostors')" style="background:#ff3333;">
+          Impostors Won
+        </button>
+        <button onclick="recordOutcome('players')" style="background:#ccff33;color:#000000;">
+          Players Won
+        </button>
+      </div>
+      <p id="outcomeMessage" style="font-weight:bold;"></p>
+    </div>
+
+    <button
+      id="statsToggleButton"
+      onclick="toggleStats()"
+      style="background:#888888;color:#ffffff;margin-top:12px;"
+    >Stats &amp; Streaks!</button>
+
+    <div
+      id="statsPanel"
+      class="menuBox"
+      style="display:none;margin-top:12px;"
+    >
+      <h2>Stats &amp; Streaks</h2>
+      <div id="statsTableContainer"></div>
+    </div>
+
+    <button onclick="playAgain()" style="margin-top:12px;">Play Again</button>
+  `;
+
+  updateStatsTable();
+}
+
+function recordOutcome(winningSide) {
+  if (roundOutcomeRecorded) return;
+
+  const winningPlayers = [];
+
+  roundPlayers.forEach((name, index) => {
+    const isImpostor =
+      roundAllImpostors || roundImpostorIndices.includes(index);
+
+    const won =
+      winningSide === "impostors"
+        ? isImpostor
+        : !isImpostor;
+
+    const key = name.trim().toLowerCase();
+    ensurePlayerStats(name);
+
+    if (won) {
+      playerStats[key].wins++;
+      playerStats[key].streak++;
+      winningPlayers.push(name);
+    } else {
+      playerStats[key].streak = 0;
+    }
+  });
+
+  roundOutcomeRecorded = true;
+
+  const buttons = document.getElementById("outcomeButtons");
+  const message = document.getElementById("outcomeMessage");
+
+  if (buttons) {
+    buttons.innerHTML = `
+      <p style="font-weight:bold;">
+        ${winningSide === "impostors" ? "😈 The impostors won!" : "🎉 The players won!"}
+      </p>
+    `;
+  }
+
+  if (message) {
+    message.textContent = winningPlayers.length
+      ? `Wins recorded for: ${winningPlayers.join(", ")}`
+      : "Outcome recorded. No players earned a win this round.";
+  }
+
+  updateStatsTable();
+}
+
+function toggleStats() {
+  const panel = document.getElementById("statsPanel");
+  const button = document.getElementById("statsToggleButton");
+
+  if (!panel || !button) return;
+
+  statsExpanded = !statsExpanded;
+  panel.style.display = statsExpanded ? "block" : "none";
+  button.textContent = statsExpanded
+    ? "Hide Stats & Streaks"
+    : "Stats & Streaks!";
+
+  if (statsExpanded) {
+    updateStatsTable();
+  }
+}
+
+function updateStatsTable() {
+  const container = document.getElementById("statsTableContainer");
+  if (!container) return;
+
+  const entries = Object.values(playerStats);
+
+  if (entries.length === 0) {
+    container.innerHTML = "<p>No stats yet!</p>";
     return;
   }
 
-  screen.innerHTML = `
-    <h1>The impostor was:</h1>
-    <h2>${escapeHTML(players[impostorIndex])}</h2>
-    <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
-    <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-    <button onclick="playAgain()">Play Again</button>
+  entries.sort((a, b) => {
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (b.streak !== a.streak) return b.streak - a.streak;
+    return a.name.localeCompare(b.name);
+  });
+
+  container.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;text-align:center;">
+      <thead>
+        <tr>
+          <th style="padding:10px;border-bottom:2px solid #888;text-align:left;">Name</th>
+          <th style="padding:10px;border-bottom:2px solid #888;">Wins</th>
+          <th style="padding:10px;border-bottom:2px solid #888;">Streak</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(player => `
+          <tr>
+            <td style="padding:10px;border-bottom:1px solid #ddd;text-align:left;">
+              ${escapeHTML(player.name)}
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #ddd;">
+              ${player.wins}
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #ddd;">
+              ${player.streak}
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
   `;
 }
 
@@ -436,6 +620,13 @@ function playAgain() {
   draggedPlayerIndex = null;
   allImpostorsThisRound = false;
   doubleTroubleThisRound = false;
+
+  roundPlayers = [];
+  roundImpostorIndices = [];
+  roundAllImpostors = false;
+  roundDoubleTrouble = false;
+  roundOutcomeRecorded = false;
+  statsExpanded = false;
 
   start();
 }
