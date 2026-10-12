@@ -12,7 +12,6 @@ let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
 let impostorHintsEnabled = true;
 let jesterEnabled = false;
-let roundJesterVotedOut = false;
 let bountyHunterEnabled = false;
 
 let playerStats = {};
@@ -375,6 +374,7 @@ function beginGame() {
   roundImpostorHintsEnabled = impostorHintsEnabled;
 
   roundJesterIndex = null;
+  roundJesterVotedOut = false;
   roundBountyHunterIndex = null;
   roundBountyTargetIndex = null;
   roundBountyHunterWon = false;
@@ -589,7 +589,7 @@ function castVote(votedIndex) {
   if (roundBountyTargetIndex === votedIndex) {
     roundBountyHunterWon = true;
   }
-  
+
   if (votedJester) {
     roundJesterVotedOut = true;
   }
@@ -664,12 +664,6 @@ function castVote(votedIndex) {
 
     if (votedJester) {
       winners.push(votedName);
-      roundImpostorIndices.forEach(index => {
-        const impostorName = roundPlayers[index];
-        if (!winners.some(name => name.trim().toLowerCase() === impostorName.trim().toLowerCase())) {
-          winners.push(impostorName);
-        }
-      });
 
       recordWinners(
         winners,
@@ -922,6 +916,7 @@ function playAgain() {
   roundAllImpostors = false;
   roundDoubleTrouble = false;
   roundJesterIndex = null;
+  roundJesterVotedOut = false;
   roundBountyHunterIndex = null;
   roundBountyTargetIndex = null;
   roundBountyHunterWon = false;
