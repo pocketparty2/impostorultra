@@ -54,8 +54,7 @@ function start() {
       <div id="playerList"></div>
       <div class="addPlayerArea">
         <input type="text" id="playerNameInput"
-          placeholder="Enter player name..." maxlength="30"
-          autocomplete="off">
+          placeholder="Enter player name..." maxlength="30" autocomplete="off">
         <button onclick="addPlayer()">Add Player</button>
         <p id="playerError" style="color:#ff3333;font-weight:bold;"></p>
       </div>
@@ -68,71 +67,78 @@ function start() {
       <div id="packDropdown"></div>
     </div>
 
-    <div class="menuBox">
-      <h2>Game Settings</h2>
-      <h3>Impostor Count Settings</h3>
+    <div class="menuBox" style="padding:14px;">
+      <h2 style="margin:0 0 12px;">Game Settings</h2>
 
-      <label class="settingToggle">
-        <input type="checkbox" id="allImpostorsToggle"
-          ${allImpostorsMode ? "checked" : ""}>
-        <span class="toggleSlider"></span>
-        <span class="settingText">
-          <strong>😈 Chaos Mode</strong>
-          <small>25% chance of everyone being an impostor</small>
-        </span>
-      </label>
+      <h3 style="margin:12px 0 6px;">Game Modes</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
+        <label class="settingToggle">
+          <input type="checkbox" id="allImpostorsToggle"
+            ${allImpostorsMode ? "checked" : ""}>
+          <span class="toggleSlider"></span>
+          <span class="settingText">
+            <strong>😈 Chaos Mode</strong>
+            <small>25% chance: everyone is an impostor</small>
+          </span>
+        </label>
 
-      <label class="settingToggle">
-        <input type="checkbox" id="doubleTroubleToggle"
-          ${doubleTroubleMode ? "checked" : ""}>
-        <span class="toggleSlider"></span>
-        <span class="settingText">
-          <strong>👥 Double Trouble Mode</strong>
-          <small>25% chance of having two impostors</small>
-        </span>
-      </label>
+        <label class="settingToggle">
+          <input type="checkbox" id="doubleTroubleToggle"
+            ${doubleTroubleMode ? "checked" : ""}>
+          <span class="toggleSlider"></span>
+          <span class="settingText">
+            <strong>👥 Double Trouble</strong>
+            <small>25% chance: two impostors</small>
+          </span>
+        </label>
+      </div>
 
-      <h3>Impostor Settings</h3>
-
+      <h3 style="margin:12px 0 6px;">Impostor</h3>
       <label class="settingToggle">
         <input type="checkbox" id="impostorHintsToggle"
           ${impostorHintsEnabled ? "checked" : ""}>
         <span class="toggleSlider"></span>
         <span class="settingText">
           <strong>💡 Impostor Hints</strong>
-          <small>Give impostors a hint instead of leaving them completely in the dark</small>
+          <small>Give impostors a related word instead of no hint</small>
         </span>
       </label>
 
-      <h3>Roles</h3>
-      <p>Enable any combination of special roles. Each role is assigned independently.</p>
+      <h3 style="margin:12px 0 6px;">Special Roles</h3>
+      <p style="margin:0 0 8px;font-size:0.9rem;">Roles are optional and can be enabled independently.</p>
 
-      <h4>🟢 Non-Impostor Roles</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
+        <div>
+          <h4 style="margin:4px 0;">🟢 Non-Impostor</h4>
+          <label class="settingToggle">
+            <input type="checkbox" id="jesterToggle"
+              ${jesterEnabled ? "checked" : ""}>
+            <span class="toggleSlider"></span>
+            <span class="settingText">
+              <strong>🎭 Jester</strong>
+              <small>Knows the real word; wins if voted out</small>
+            </span>
+          </label>
+        </div>
 
-      <label class="settingToggle">
-        <input type="checkbox" id="jesterToggle"
-          ${jesterEnabled ? "checked" : ""}>
-        <span class="toggleSlider"></span>
-        <span class="settingText">
-          <strong>🎭 Jester</strong>
-          <small>Knows the real word and wins by being voted out. Maximum one per round.</small>
-        </span>
-      </label>
+        <div>
+          <h4 style="margin:4px 0;">🔴 Impostor</h4>
+          <p style="font-size:0.85rem;margin:4px 0;">No roles available yet.</p>
+        </div>
 
-      <h4>🔴 Impostor Roles</h4>
-      <p>No available roles yet.</p>
-
-      <h4>🟣 Both</h4>
-
-      <label class="settingToggle">
-        <input type="checkbox" id="bountyHunterToggle"
-          ${bountyHunterEnabled ? "checked" : ""}>
-        <span class="toggleSlider"></span>
-        <span class="settingText">
-          <strong>🎯 Bounty Hunter</strong>
-          <small>Gets a secret target. Wins if their target is voted out, regardless of their team's result.</small>
-        </span>
-      </label>
+        <div>
+          <h4 style="margin:4px 0;">🟣 Both</h4>
+          <label class="settingToggle">
+            <input type="checkbox" id="bountyHunterToggle"
+              ${bountyHunterEnabled ? "checked" : ""}>
+            <span class="toggleSlider"></span>
+            <span class="settingText">
+              <strong>🎯 Bounty Hunter</strong>
+              <small>Wins if their secret target is voted out</small>
+            </span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
@@ -412,7 +418,7 @@ function beginGame() {
     }
   }
 
-  if (bountyHunterEnabled && roundPlayers.length >= 2) {
+  if (bountyHunterEnabled) {
     roundBountyHunterIndex = Math.floor(Math.random() * roundPlayers.length);
 
     const possibleTargets = roundPlayers
@@ -436,69 +442,80 @@ function showRole() {
   }
 
   screen.innerHTML = `
-    <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
-    <p>Pass the device to this player, then reveal their role.</p>
-    <button onclick="reveal()">Reveal Word</button>
+    <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;">
+      <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+      <p>Pass the device to this player, then reveal their role.</p>
+      <button onclick="reveal()">Reveal Role</button>
+    </div>
   `;
 }
 
 function reveal() {
   const isImpostor = roundAllImpostors ||
     roundImpostorIndices.includes(currentPlayer);
-
   const isJester = roundJesterIndex === currentPlayer;
   const isBountyHunter = roundBountyHunterIndex === currentPlayer;
 
-  let roleContent = "";
+  let roleName = "REGULAR PLAYER";
+  let roleEmoji = "🟢";
+  let roleColor = "#444";
 
   if (isImpostor) {
-    if (!roundImpostorHintsEnabled) {
-      roleContent = `
-        <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-        <p>You have no hint. Figure out the real word from the discussion!</p>
-      `;
-    } else {
-      roleContent = `
-        <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-        <p>Your word is only a <b>hint</b>.</p>
-        <h2>${escapeHTML(chosenPair.impostor)}</h2>
-      `;
-    }
+    roleName = "IMPOSTOR";
+    roleEmoji = "😈";
+    roleColor = "#ff3333";
   } else if (isJester) {
-    roleContent = `
-      <h2 style="color:#cc9900;">🎭 You are the JESTER!</h2>
-      <p>Your secret objective is to get voted out.</p>
-      <p>You know the real word:</p>
-      <h2>${escapeHTML(chosenPair.real)}</h2>
-      <p>If the group votes you out, you win your special objective!</p>
-    `;
-  } else {
-    roleContent = `
-      <h2>You are a REGULAR PLAYER!</h2>
-      <p>Your word is:</p>
-      <h2>${escapeHTML(chosenPair.real)}</h2>
-    `;
+    roleName = "JESTER";
+    roleEmoji = "🎭";
+    roleColor = "#cc9900";
   }
 
-  let bountyHunterContent = "";
+  let wordLabel = "REAL WORD";
+  let wordContent = escapeHTML(chosenPair.real);
+
+  if (isImpostor) {
+    if (roundImpostorHintsEnabled) {
+      wordLabel = "IMPOSTOR HINT";
+      wordContent = escapeHTML(chosenPair.impostor);
+    } else {
+      wordLabel = "WORD";
+      wordContent = "No hint enabled";
+    }
+  }
+
+  const objectives = [];
+
+  if (isJester) {
+    objectives.push("🎭 Get voted out to win your special objective.");
+  }
 
   if (isBountyHunter) {
-    bountyHunterContent = `
-      <div class="menuBox" style="border:2px solid #7b61ff;text-align:center;margin-top:16px;">
-        <h2 style="color:#7b61ff;margin-top:0;">🎯 You are the BOUNTY HUNTER!</h2>
-        <p>Your secret target is:</p>
-        <h2>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</h2>
-        <p>If your target is voted out, you win regardless of your team's result.</p>
-        <p>Keep your target's identity secret!</p>
-      </div>
-    `;
+    objectives.push(
+      `🎯 Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Win if they are voted out, regardless of your team's result.`
+    );
+  }
+
+  if (objectives.length === 0) {
+    objectives.push("No special objective. Follow your team's normal win conditions.");
   }
 
   screen.innerHTML = `
-    <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
-    ${roleContent}
-    ${bountyHunterContent}
-    <button onclick="nextPlayer()">Hide</button>
+    <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;padding:20px;">
+      <p style="margin:0 0 6px;font-size:0.85rem;letter-spacing:2px;">YOUR ROLE</p>
+      <h1 style="margin:0 0 20px;color:${roleColor};">${roleEmoji} ${roleName}</h1>
+
+      <div style="background:#f3f3f3;color:#111;border-radius:12px;padding:16px;margin-bottom:12px;">
+        <p style="font-size:0.8rem;font-weight:bold;letter-spacing:1px;margin:0 0 8px;">${wordLabel}</p>
+        <h2 style="margin:0;overflow-wrap:anywhere;">${wordContent}</h2>
+      </div>
+
+      <div style="border:1px solid #ccc;border-radius:12px;padding:14px;margin-bottom:18px;text-align:left;">
+        <h3 style="margin:0 0 8px;text-align:center;">🎯 Your Objective</h3>
+        ${objectives.map(objective => `<p style="margin:8px 0;">${objective}</p>`).join("")}
+      </div>
+
+      <button onclick="nextPlayer()">Hide &amp; Pass Device</button>
+    </div>
   `;
 }
 
@@ -649,9 +666,7 @@ function recordWinners(winners, headline, detail) {
       name => name.trim().toLowerCase() === bountyHunterName.trim().toLowerCase()
     );
 
-    if (!alreadyWinner) {
-      winners.push(bountyHunterName);
-    }
+    if (!alreadyWinner) winners.push(bountyHunterName);
   }
 
   roundOutcomeRecorded = true;
