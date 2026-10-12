@@ -12,6 +12,7 @@ let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
 let impostorHintsEnabled = true;
 let jesterEnabled = false;
+let bountyHunterEnabled = false;
 
 let playerStats = {};
 let roundPlayers = [];
@@ -20,6 +21,9 @@ let roundAllImpostors = false;
 let roundDoubleTrouble = false;
 let roundImpostorHintsEnabled = true;
 let roundJesterIndex = null;
+let roundBountyHunterIndex = null;
+let roundBountyTargetIndex = null;
+let roundBountyHunterWon = false;
 let roundOutcomeRecorded = false;
 let statsExpanded = false;
 let revealedImpostors = [];
@@ -119,7 +123,16 @@ function start() {
       <p>No available roles yet.</p>
 
       <h4>🟣 Both</h4>
-      <p>No available roles yet.</p>
+
+      <label class="settingToggle">
+        <input type="checkbox" id="bountyHunterToggle"
+          ${bountyHunterEnabled ? "checked" : ""}>
+        <span class="toggleSlider"></span>
+        <span class="settingText">
+          <strong>🎯 Bounty Hunter</strong>
+          <small>Gets a secret target. Wins if their target is voted out, regardless of their team's result.</small>
+        </span>
+      </label>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
@@ -149,6 +162,10 @@ function start() {
 
   document.getElementById("jesterToggle").addEventListener("change", event => {
     jesterEnabled = event.target.checked;
+  });
+
+  document.getElementById("bountyHunterToggle").addEventListener("change", event => {
+    bountyHunterEnabled = event.target.checked;
   });
 
   updatePlayerList();
@@ -348,7 +365,11 @@ function beginGame() {
   revealedImpostors = [];
   votingFinished = false;
   roundImpostorHintsEnabled = impostorHintsEnabled;
+
   roundJesterIndex = null;
+  roundBountyHunterIndex = null;
+  roundBountyTargetIndex = null;
+  roundBountyHunterWon = false;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
@@ -391,6 +412,18 @@ function beginGame() {
     }
   }
 
+  if (bountyHunterEnabled && roundPlayers.length >= 2) {
+    roundBountyHunterIndex = Math.floor(Math.random() * roundPlayers.length);
+
+    const possibleTargets = roundPlayers
+      .map((_, index) => index)
+      .filter(index => index !== roundBountyHunterIndex);
+
+    roundBountyTargetIndex = possibleTargets[
+      Math.floor(Math.random() * possibleTargets.length)
+    ];
+  }
+
   currentPlayer = 0;
   showRole();
 }
@@ -414,46 +447,57 @@ function reveal() {
     roundImpostorIndices.includes(currentPlayer);
 
   const isJester = roundJesterIndex === currentPlayer;
+  const isBountyHunter = roundBountyHunterIndex === currentPlayer;
+
+  let roleContent = "";
 
   if (isImpostor) {
     if (!roundImpostorHintsEnabled) {
-      screen.innerHTML = `
-        <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+      roleContent = `
         <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
         <p>You have no hint. Figure out the real word from the discussion!</p>
-        <button onclick="nextPlayer()">Hide</button>
       `;
-      return;
+    } else {
+      roleContent = `
+        <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
+        <p>Your word is only a <b>hint</b>.</p>
+        <h2>${escapeHTML(chosenPair.impostor)}</h2>
+      `;
     }
-
-    screen.innerHTML = `
-      <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
-      <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-      <p>Your word is only a <b>hint</b>.</p>
-      <h2>${escapeHTML(chosenPair.impostor)}</h2>
-      <button onclick="nextPlayer()">Hide</button>
-    `;
-    return;
-  }
-
-  if (isJester) {
-    screen.innerHTML = `
-      <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+  } else if (isJester) {
+    roleContent = `
       <h2 style="color:#cc9900;">🎭 You are the JESTER!</h2>
       <p>Your secret objective is to get voted out.</p>
       <p>You know the real word:</p>
       <h2>${escapeHTML(chosenPair.real)}</h2>
       <p>If the group votes you out, you win your special objective!</p>
-      <button onclick="nextPlayer()">Hide</button>
     `;
-    return;
+  } else {
+    roleContent = `
+      <h2>You are a REGULAR PLAYER!</h2>
+      <p>Your word is:</p>
+      <h2>${escapeHTML(chosenPair.real)}</h2>
+    `;
+  }
+
+  let bountyHunterContent = "";
+
+  if (isBountyHunter) {
+    bountyHunterContent = `
+      <div class="menuBox" style="border:2px solid #7b61ff;text-align:center;margin-top:16px;">
+        <h2 style="color:#7b61ff;margin-top:0;">🎯 You are the BOUNTY HUNTER!</h2>
+        <p>Your secret target is:</p>
+        <h2>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</h2>
+        <p>If your target is voted out, you win regardless of your team's result.</p>
+        <p>Keep your target's identity secret!</p>
+      </div>
+    `;
   }
 
   screen.innerHTML = `
     <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
-    <h2>You are a REGULAR PLAYER!</h2>
-    <p>Your word is:</p>
-    <h2>${escapeHTML(chosenPair.real)}</h2>
+    ${roleContent}
+    ${bountyHunterContent}
     <button onclick="nextPlayer()">Hide</button>
   `;
 }
@@ -505,6 +549,10 @@ function castVote(votedIndex) {
   const votedIsImpostor = roundAllImpostors ||
     roundImpostorIndices.includes(votedIndex);
   const votedJester = roundJesterIndex === votedIndex;
+
+  if (roundBountyTargetIndex === votedIndex) {
+    roundBountyHunterWon = true;
+  }
 
   if (roundAllImpostors) {
     const winners = roundPlayers.filter((_, index) => index !== votedIndex);
@@ -595,6 +643,17 @@ function castVote(votedIndex) {
 function recordWinners(winners, headline, detail) {
   if (roundOutcomeRecorded) return;
 
+  if (roundBountyHunterWon && roundBountyHunterIndex !== null) {
+    const bountyHunterName = roundPlayers[roundBountyHunterIndex];
+    const alreadyWinner = winners.some(
+      name => name.trim().toLowerCase() === bountyHunterName.trim().toLowerCase()
+    );
+
+    if (!alreadyWinner) {
+      winners.push(bountyHunterName);
+    }
+  }
+
   roundOutcomeRecorded = true;
   votingFinished = true;
 
@@ -662,6 +721,24 @@ function showResults(headline, detail, winners) {
     `;
   }
 
+  let bountyHunterReveal = "";
+
+  if (roundBountyHunterIndex !== null) {
+    const bountyHunterName = roundPlayers[roundBountyHunterIndex];
+    const bountyTargetName = roundPlayers[roundBountyTargetIndex];
+
+    bountyHunterReveal = `
+      <div class="menuBox" style="border:2px solid #7b61ff;text-align:center;margin-top:16px;">
+        <h2 style="color:#7b61ff;margin-top:0;">🎯 THE BOUNTY HUNTER</h2>
+        <h2>${escapeHTML(bountyHunterName)}</h2>
+        <p>Their target was <strong>${escapeHTML(bountyTargetName)}</strong>.</p>
+        <p>${roundBountyHunterWon
+          ? "The target was voted out! The Bounty Hunter achieved their objective!"
+          : "The target survived the vote. The Bounty Hunter did not achieve their objective."}</p>
+      </div>
+    `;
+  }
+
   screen.innerHTML = `
     <div style="text-align:center;margin:10px 0 24px;">
       <p style="font-size:0.9rem;font-weight:bold;letter-spacing:2px;margin-bottom:8px;">
@@ -673,6 +750,7 @@ function showResults(headline, detail, winners) {
 
     ${roleReveal}
     ${jesterReveal}
+    ${bountyHunterReveal}
 
     <div class="menuBox" style="margin-top:16px;text-align:center;">
       <h2 style="margin-top:0;">📝 The Words</h2>
@@ -793,6 +871,9 @@ function playAgain() {
   roundAllImpostors = false;
   roundDoubleTrouble = false;
   roundJesterIndex = null;
+  roundBountyHunterIndex = null;
+  roundBountyTargetIndex = null;
+  roundBountyHunterWon = false;
   roundOutcomeRecorded = false;
   statsExpanded = false;
   revealedImpostors = [];
