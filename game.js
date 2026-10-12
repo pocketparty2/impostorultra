@@ -14,7 +14,7 @@ function start() {
     <h1>Word Impostor</h1>
 
     <div class="menuBox">
-      <h2>Players (${players.length})</h2>
+      <h2 id="playerHeading">Players (0)</h2>
       <div id="playerList"></div>
 
       <div class="addPlayerArea">
@@ -79,6 +79,8 @@ function addPlayer() {
 }
 
 function removePlayer(index) {
+  if (index < 0 || index >= players.length) return;
+
   players.splice(index, 1);
   updatePlayerList();
   updateStartButton();
@@ -86,14 +88,24 @@ function removePlayer(index) {
 
 function updatePlayerList() {
   const container = document.getElementById("playerList");
+  const heading = document.getElementById("playerHeading");
+
+  if (!container || !heading) return;
+
+  heading.textContent = `Players (${players.length})`;
 
   container.innerHTML = players
     .map(
       (p, i) => `
         <div class="playerBox" data-index="${i}">
-          <span class="dragHandle" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
+          <span
+            class="dragHandle"
+            title="Drag to reorder"
+            aria-label="Drag to reorder"
+            draggable="true"
+          >⠿</span>
           <span class="playerName">${escapeHTML(p)}</span>
-          <span class="removeBtn" onclick="removePlayer(${i})" title="Remove player">✕</span>
+          <span class="removeBtn" data-remove="${i}" title="Remove player">✕</span>
         </div>
       `
     )
@@ -101,47 +113,59 @@ function updatePlayerList() {
 
   if (players.length === 0) {
     container.innerHTML = "<p>No players added yet</p>";
+    return;
   }
 
-  container.querySelectorAll(".dragHandle").forEach(handle => {
-    handle.addEventListener("pointerdown", event => {
-      event.preventDefault();
+  container.querySelectorAll(".removeBtn").forEach(button => {
+    button.addEventListener("click", () => {
+      removePlayer(Number(button.dataset.remove));
+    });
+  });
 
+  container.querySelectorAll(".dragHandle").forEach(handle => {
+    handle.addEventListener("dragstart", event => {
       const box = handle.closest(".playerBox");
       draggedPlayerIndex = Number(box.dataset.index);
-      box.classList.add("dragging");
 
-      handle.setPointerCapture(event.pointerId);
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(draggedPlayerIndex));
+
+      box.classList.add("dragging");
     });
 
-    handle.addEventListener("pointerup", event => {
-      if (draggedPlayerIndex === null) return;
+    handle.addEventListener("dragend", () => {
+      draggedPlayerIndex = null;
+      container.querySelectorAll(".playerBox").forEach(box => {
+        box.classList.remove("dragging");
+      });
+    });
+  });
 
-      const target = document.elementFromPoint(
-        event.clientX,
-        event.clientY
-      );
+  container.querySelectorAll(".playerBox").forEach(box => {
+    box.addEventListener("dragover", event => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
 
-      const targetBox = target?.closest(".playerBox");
+    box.addEventListener("drop", event => {
+      event.preventDefault();
+
       const fromIndex = draggedPlayerIndex;
-      const toIndex = targetBox ? Number(targetBox.dataset.index) : fromIndex;
+      const toIndex = Number(box.dataset.index);
 
       if (
-        targetBox &&
-        Number.isInteger(toIndex) &&
-        toIndex >= 0 &&
-        toIndex < players.length &&
-        fromIndex !== toIndex
+        fromIndex === null ||
+        !Number.isInteger(fromIndex) ||
+        fromIndex < 0 ||
+        fromIndex >= players.length ||
+        fromIndex === toIndex
       ) {
-        const movedPlayer = players.splice(fromIndex, 1)[0];
-        players.splice(toIndex, 0, movedPlayer);
+        return;
       }
 
-      draggedPlayerIndex = null;
-      updatePlayerList();
-    });
+      const movedPlayer = players.splice(fromIndex, 1)[0];
+      players.splice(toIndex, 0, movedPlayer);
 
-    handle.addEventListener("pointercancel", () => {
       draggedPlayerIndex = null;
       updatePlayerList();
     });
@@ -160,6 +184,7 @@ function escapeHTML(text) {
 
 function updateEquippedPacks() {
   const container = document.getElementById("equippedPacks");
+  if (!container) return;
 
   if (enabledPacks.length === 0) {
     container.innerHTML = "<p>No packs enabled</p>";
@@ -205,6 +230,7 @@ function togglePack(pack) {
 
 function updateStartButton() {
   const btn = document.getElementById("startBtn");
+  if (!btn) return;
 
   if (players.length < 3) {
     btn.disabled = true;
@@ -276,7 +302,6 @@ function reveal() {
         : `<p>Your word is:</p>`
     }
     <h2>${escapeHTML(word)}</h2>
-
     <button onclick="nextPlayer()">Hide</button>
   `;
 }
@@ -286,14 +311,12 @@ function nextPlayer() {
   showRole();
 }
 
-
 function startReveal() {
   screen.innerHTML = `
     <h1>The impostor was:</h1>
     <h2>${escapeHTML(players[impostorIndex])}</h2>
     <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
     <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-
     <button onclick="playAgain()">Play Again</button>
   `;
 }
