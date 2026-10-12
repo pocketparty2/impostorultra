@@ -286,6 +286,7 @@ function nextPlayer() {
   showRole();
 }
 
+
 function startReveal() {
   screen.innerHTML = `
     <h1>The impostor was:</h1>
@@ -293,8 +294,18 @@ function startReveal() {
     <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
     <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
 
-    <button onclick="start()">Play Again</button>
+    <button onclick="playAgain()">Play Again</button>
   `;
+}
+
+function playAgain() {
+  currentPlayer = 0;
+  chosenPair = null;
+  impostorIndex = null;
+  starterPlayer = null;
+  draggedPlayerIndex = null;
+
+  start();
 }
 
 start();
