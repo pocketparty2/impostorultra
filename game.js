@@ -5,6 +5,7 @@ let impostorIndex = null;
 let impostorIndices = [];
 let starterPlayer = null;
 let draggedPlayerIndex = null;
+
 let allImpostorsMode = false;
 let allImpostorsThisRound = false;
 let doubleTroubleMode = false;
@@ -17,6 +18,8 @@ let roundAllImpostors = false;
 let roundDoubleTrouble = false;
 let roundOutcomeRecorded = false;
 let statsExpanded = false;
+let revealedImpostors = [];
+let votingFinished = false;
 
 let screen = document.getElementById("screen");
 
@@ -348,6 +351,8 @@ function beginGame() {
   roundPlayers = [...players];
   roundOutcomeRecorded = false;
   statsExpanded = false;
+  revealedImpostors = [];
+  votingFinished = false;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
@@ -388,15 +393,7 @@ function beginGame() {
 function showRole() {
   if (currentPlayer >= players.length) {
     starterPlayer = players[Math.floor(Math.random() * players.length)];
-
-    screen.innerHTML = `
-      <h1>All words assigned</h1>
-      <p style="color:#ff3333;font-weight:bold;">
-        ${escapeHTML(starterPlayer)} starts the conversation!
-      </p>
-      <p>Discuss and give clues!</p>
-      <button onclick="startReveal()">Reveal Impostor</button>
-    `;
+    showVotingScreen();
     return;
   }
 
@@ -430,54 +427,182 @@ function nextPlayer() {
   showRole();
 }
 
-function startReveal() {
-  let resultContent = "";
+function showVotingScreen(message = "") {
+  if (votingFinished) return;
 
-  if (allImpostorsThisRound) {
-    resultContent = `
-      <h1 style="color:#ff3333;">EVERYONE WAS AN IMPOSTOR!</h1>
+  const voteButtons = roundPlayers.map((name, index) => {
+    const alreadyRevealed = revealedImpostors.includes(index);
+
+    return `
+      <button
+        onclick="castVote(${index})"
+        ${alreadyRevealed ? "disabled" : ""}
+        style="
+          display:block;
+          width:100%;
+          margin:8px 0;
+          ${alreadyRevealed
+            ? "background:#bdbdbd;color:#555555;cursor:not-allowed;"
+            : ""}
+        "
+      >
+        ${escapeHTML(name)}${alreadyRevealed ? " - IMPOSTOR REVEALED" : ""}
+      </button>
+    `;
+  }).join("");
+
+  screen.innerHTML = `
+    <h1>All words assigned</h1>
+
+    <p style="color:#ff3333;font-weight:bold;">
+      ${escapeHTML(starterPlayer)} starts the conversation!
+    </p>
+
+    <p>Discuss and give clues!</p>
+
+    <div class="menuBox">
+      <h2>Vote Out a Player</h2>
+      <p>Who do you think is the impostor?</p>
+      ${message ? `<p style="color:#ff3333;font-weight:bold;">${escapeHTML(message)}</p>` : ""}
+      <div id="votingButtons">
+        ${voteButtons}
+      </div>
+    </div>
+  `;
+}
+
+function castVote(votedIndex) {
+  if (votingFinished || roundOutcomeRecorded) return;
+  if (votedIndex < 0 || votedIndex >= roundPlayers.length) return;
+  if (revealedImpostors.includes(votedIndex)) return;
+
+  const votedName = roundPlayers[votedIndex];
+  const votedIsImpostor =
+    roundAllImpostors || roundImpostorIndices.includes(votedIndex);
+
+  if (roundAllImpostors) {
+    const winners = roundPlayers.filter((_, index) => index !== votedIndex);
+
+    recordWinners(
+      winners,
+      `${escapeHTML(votedName)} was voted out! Everyone else wins!`,
+      `The voted-out player was ${escapeHTML(votedName)}.`
+    );
+    return;
+  }
+
+  if (roundDoubleTrouble) {
+    if (votedIsImpostor) {
+      revealedImpostors.push(votedIndex);
+
+      if (revealedImpostors.length < roundImpostorIndices.length) {
+        showVotingScreen(
+          `${votedName} was an impostor! But there's another impostor still in the game. Vote again!`
+        );
+        return;
+      }
+
+      const winners = roundPlayers.filter(
+        (_, index) => !roundImpostorIndices.includes(index)
+      );
+
+      recordWinners(
+        winners,
+        "Both impostors were discovered! The players win!",
+        "Both impostors were voted out."
+      );
+      return;
+    }
+
+    const winners = roundImpostorIndices.map(index => roundPlayers[index]);
+
+    recordWinners(
+      winners,
+      `${votedName} was a regular player! Both impostors win!`,
+      `${votedName} was voted out, so both impostors win.`
+    );
+    return;
+  }
+
+  if (votedIsImpostor) {
+    const winners = roundPlayers.filter(
+      (_, index) => !roundImpostorIndices.includes(index)
+    );
+
+    recordWinners(
+      winners,
+      `${votedName} was the impostor! The players win!`,
+      "The impostor was correctly identified."
+    );
+  } else {
+    const winners = roundImpostorIndices.map(index => roundPlayers[index]);
+
+    recordWinners(
+      winners,
+      `${votedName} was not the impostor! The impostor wins!`,
+      `${votedName} was voted out instead of the impostor.`
+    );
+  }
+}
+
+function recordWinners(winners, headline, detail) {
+  if (roundOutcomeRecorded) return;
+
+  roundOutcomeRecorded = true;
+  votingFinished = true;
+
+  const winnerKeys = new Set(
+    winners.map(name => name.trim().toLowerCase())
+  );
+
+  roundPlayers.forEach(name => {
+    const key = name.trim().toLowerCase();
+    ensurePlayerStats(name);
+
+    if (winnerKeys.has(key)) {
+      playerStats[key].wins++;
+      playerStats[key].streak++;
+    } else {
+      playerStats[key].streak = 0;
+    }
+  });
+
+  showResults(headline, detail, winners);
+}
+
+function showResults(headline, detail, winners) {
+  let roleReveal = "";
+
+  if (roundAllImpostors) {
+    roleReveal = `
+      <h2 style="color:#ff3333;">EVERYONE WAS AN IMPOSTOR!</h2>
       <p>All players received the impostor hint.</p>
     `;
-  } else if (doubleTroubleThisRound) {
-    resultContent = `
-      <h1 style="color:#ff3333;">DOUBLE TROUBLE!</h1>
+  } else if (roundDoubleTrouble) {
+    roleReveal = `
+      <h2 style="color:#ff3333;">DOUBLE TROUBLE!</h2>
       <p>The impostors were:</p>
       <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
       <h2>${escapeHTML(roundPlayers[roundImpostorIndices[1]])}</h2>
     `;
   } else {
-    resultContent = `
-      <h1>The impostor was:</h1>
+    roleReveal = `
+      <p>The impostor was:</p>
       <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
     `;
   }
 
-  resultContent += `
-    <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
-    <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-  `;
-
-  showResults(resultContent);
-}
-
-function showResults(resultContent) {
   screen.innerHTML = `
-    ${resultContent}
+    <h1>${headline}</h1>
 
-    <div class="menuBox" style="margin-top:20px;">
-      <h3>Who won this round?</h3>
-      <p style="font-size:0.9rem;">
-        Record the outcome to update everyone's wins and streaks.
-      </p>
-      <div id="outcomeButtons">
-        <button onclick="recordOutcome('impostors')" style="background:#ff3333;">
-          Impostors Won
-        </button>
-        <button onclick="recordOutcome('players')" style="background:#ccff33;color:#000000;">
-          Players Won
-        </button>
-      </div>
-      <p id="outcomeMessage" style="font-weight:bold;"></p>
+    ${roleReveal}
+
+    <div class="menuBox">
+      <h3>Round Results</h3>
+      <p>${detail}</p>
+      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
+      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
+      <p><b>Winning side:</b> ${winners.map(escapeHTML).join(", ") || "Nobody"}</p>
     </div>
 
     <button
@@ -497,54 +622,6 @@ function showResults(resultContent) {
 
     <button onclick="playAgain()" style="margin-top:12px;">Play Again</button>
   `;
-
-  updateStatsTable();
-}
-
-function recordOutcome(winningSide) {
-  if (roundOutcomeRecorded) return;
-
-  const winningPlayers = [];
-
-  roundPlayers.forEach((name, index) => {
-    const isImpostor =
-      roundAllImpostors || roundImpostorIndices.includes(index);
-
-    const won =
-      winningSide === "impostors"
-        ? isImpostor
-        : !isImpostor;
-
-    const key = name.trim().toLowerCase();
-    ensurePlayerStats(name);
-
-    if (won) {
-      playerStats[key].wins++;
-      playerStats[key].streak++;
-      winningPlayers.push(name);
-    } else {
-      playerStats[key].streak = 0;
-    }
-  });
-
-  roundOutcomeRecorded = true;
-
-  const buttons = document.getElementById("outcomeButtons");
-  const message = document.getElementById("outcomeMessage");
-
-  if (buttons) {
-    buttons.innerHTML = `
-      <p style="font-weight:bold;">
-        ${winningSide === "impostors" ? "😈 The impostors won!" : "🎉 The players won!"}
-      </p>
-    `;
-  }
-
-  if (message) {
-    message.textContent = winningPlayers.length
-      ? `Wins recorded for: ${winningPlayers.join(", ")}`
-      : "Outcome recorded. No players earned a win this round.";
-  }
 
   updateStatsTable();
 }
@@ -618,6 +695,7 @@ function playAgain() {
   impostorIndices = [];
   starterPlayer = null;
   draggedPlayerIndex = null;
+
   allImpostorsThisRound = false;
   doubleTroubleThisRound = false;
 
@@ -627,6 +705,8 @@ function playAgain() {
   roundDoubleTrouble = false;
   roundOutcomeRecorded = false;
   statsExpanded = false;
+  revealedImpostors = [];
+  votingFinished = false;
 
   start();
 }
