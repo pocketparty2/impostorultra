@@ -408,29 +408,7 @@ function beginGame() {
   roundAllImpostors = allImpostorsThisRound;
   roundDoubleTrouble = doubleTroubleThisRound;
 
-  if (jesterEnabled && !roundAllImpostors) {
-    const eligiblePlayers = roundPlayers
-      .map((_, index) => index)
-      .filter(index => !roundImpostorIndices.includes(index));
-
-    if (eligiblePlayers.length > 0) {
-      roundJesterIndex = eligiblePlayers[
-        Math.floor(Math.random() * eligiblePlayers.length)
-      ];
-    }
-  }
-
-  if (bountyHunterEnabled) {
-    roundBountyHunterIndex = Math.floor(Math.random() * roundPlayers.length);
-
-    const possibleTargets = roundPlayers
-      .map((_, index) => index)
-      .filter(index => index !== roundBountyHunterIndex);
-
-    roundBountyTargetIndex = possibleTargets[
-      Math.floor(Math.random() * possibleTargets.length)
-    ];
-  }
+  assignSpecialRoles();
 
   currentPlayer = 0;
   showRole();
@@ -459,7 +437,7 @@ function reveal() {
   const isBountyHunter = roundBountyHunterIndex === currentPlayer;
 
   const teamName = isImpostor ? "IMPOSTOR" : "INNOCENT";
-  const teamColor = isImpostor ? "#ff3333" : "#55dd77";
+  const teamColor = isImpostor ? ROLE_COLORS.impostor : ROLE_COLORS.innocent;
 
   const specificRoles = [];
   if (isJester) specificRoles.push("Jester");
@@ -491,23 +469,7 @@ function reveal() {
     mainObjective = "Find and vote out the impostor to win!";
   }
 
-  const extraObjectives = [];
-
-  if (isJester) {
-    extraObjectives.push({
-      title: "EXTRA OBJECTIVE: JESTER",
-      text: "Get voted out to win!",
-      color: "#cc9900"
-    });
-  }
-
-  if (isBountyHunter) {
-    extraObjectives.push({
-      title: "EXTRA OBJECTIVE: BOUNTY HUNTER",
-      text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`,
-      color: "#7b61ff"
-    });
-  }
+  const extraObjectives = getSpecialObjectives(isJester, isBountyHunter);
 
   screen.innerHTML = `
     <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;padding:20px;">
@@ -584,13 +546,7 @@ function castVote(votedIndex) {
     roundImpostorIndices.includes(votedIndex);
   const votedJester = roundJesterIndex === votedIndex;
 
-  if (roundBountyTargetIndex === votedIndex) {
-    roundBountyHunterWon = true;
-  }
-
-  if (votedJester) {
-    roundJesterVotedOut = true;
-  }
+  handleSpecialRoleVote(votedIndex);
 
   if (roundAllImpostors) {
     const winners = roundPlayers.filter((_, index) => index !== votedIndex);
@@ -681,21 +637,7 @@ function castVote(votedIndex) {
 function recordWinners(winners, headline, detail) {
   if (roundOutcomeRecorded) return;
 
-  if (roundJesterIndex !== null && !roundJesterVotedOut) {
-    const jesterName = roundPlayers[roundJesterIndex];
-    winners = winners.filter(
-      name => name.trim().toLowerCase() !== jesterName.trim().toLowerCase()
-    );
-  }
-
-  if (roundBountyHunterWon && roundBountyHunterIndex !== null) {
-    const bountyHunterName = roundPlayers[roundBountyHunterIndex];
-    const alreadyWinner = winners.some(
-      name => name.trim().toLowerCase() === bountyHunterName.trim().toLowerCase()
-    );
-
-    if (!alreadyWinner) winners.push(bountyHunterName);
-  }
+  winners = applySpecialRoleWinners(winners);
 
   roundOutcomeRecorded = true;
   votingFinished = true;
@@ -745,42 +687,7 @@ function showResults(headline, detail, winners) {
     `;
   }
 
-  let jesterReveal = "";
-
-  if (roundJesterIndex !== null) {
-    const jesterName = roundPlayers[roundJesterIndex];
-    const jesterWon = winners.some(
-      name => name.trim().toLowerCase() === jesterName.trim().toLowerCase()
-    );
-
-    jesterReveal = `
-      <div class="menuBox" style="border:2px solid #cc9900;text-align:center;margin-top:16px;">
-        <h2 style="color:#cc9900;margin-top:0;">🎭 THE JESTER</h2>
-        <h2>${escapeHTML(jesterName)}</h2>
-        <p>${jesterWon
-          ? "The Jester achieved their objective and won!"
-          : "The Jester did not get voted out."}</p>
-      </div>
-    `;
-  }
-
-  let bountyHunterReveal = "";
-
-  if (roundBountyHunterIndex !== null) {
-    const bountyHunterName = roundPlayers[roundBountyHunterIndex];
-    const bountyTargetName = roundPlayers[roundBountyTargetIndex];
-
-    bountyHunterReveal = `
-      <div class="menuBox" style="border:2px solid #7b61ff;text-align:center;margin-top:16px;">
-        <h2 style="color:#7b61ff;margin-top:0;">🎯 THE BOUNTY HUNTER</h2>
-        <h2>${escapeHTML(bountyHunterName)}</h2>
-        <p>Their target was <strong>${escapeHTML(bountyTargetName)}</strong>.</p>
-        <p>${roundBountyHunterWon
-          ? "The target was voted out! The Bounty Hunter achieved their objective!"
-          : "The target survived the vote. The Bounty Hunter did not achieve their objective."}</p>
-      </div>
-    `;
-  }
+  const { jesterReveal, bountyHunterReveal } = buildSpecialRoleResults(winners);
 
   screen.innerHTML = `
     <div style="text-align:center;margin:10px 0 24px;">
