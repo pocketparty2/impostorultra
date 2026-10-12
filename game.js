@@ -11,6 +11,7 @@ let allImpostorsThisRound = false;
 let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
 let impostorHintsEnabled = true;
+let jesterEnabled = false;
 
 let playerStats = {};
 let roundPlayers = [];
@@ -18,6 +19,7 @@ let roundImpostorIndices = [];
 let roundAllImpostors = false;
 let roundDoubleTrouble = false;
 let roundImpostorHintsEnabled = true;
+let roundJesterIndex = null;
 let roundOutcomeRecorded = false;
 let statsExpanded = false;
 let revealedImpostors = [];
@@ -97,6 +99,27 @@ function start() {
           <small>Give impostors a hint instead of leaving them completely in the dark</small>
         </span>
       </label>
+
+      <h3>Roles</h3>
+      <p>Enable any combination of special roles. Each role is assigned independently.</p>
+
+      <h4>🟢 Non-Impostor Roles</h4>
+
+      <label class="settingToggle">
+        <input type="checkbox" id="jesterToggle"
+          ${jesterEnabled ? "checked" : ""}>
+        <span class="toggleSlider"></span>
+        <span class="settingText">
+          <strong>🎭 Jester</strong>
+          <small>Knows the real word and wins by being voted out. Maximum one per round.</small>
+        </span>
+      </label>
+
+      <h4>🔴 Impostor Roles</h4>
+      <p>No available roles yet.</p>
+
+      <h4>🟣 Both</h4>
+      <p>No available roles yet.</p>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
@@ -104,6 +127,7 @@ function start() {
 
   document.getElementById("allImpostorsToggle").addEventListener("change", event => {
     allImpostorsMode = event.target.checked;
+
     if (allImpostorsMode) {
       doubleTroubleMode = false;
       document.getElementById("doubleTroubleToggle").checked = false;
@@ -112,6 +136,7 @@ function start() {
 
   document.getElementById("doubleTroubleToggle").addEventListener("change", event => {
     doubleTroubleMode = event.target.checked;
+
     if (doubleTroubleMode) {
       allImpostorsMode = false;
       document.getElementById("allImpostorsToggle").checked = false;
@@ -120,6 +145,10 @@ function start() {
 
   document.getElementById("impostorHintsToggle").addEventListener("change", event => {
     impostorHintsEnabled = event.target.checked;
+  });
+
+  document.getElementById("jesterToggle").addEventListener("change", event => {
+    jesterEnabled = event.target.checked;
   });
 
   updatePlayerList();
@@ -160,6 +189,7 @@ function addPlayer() {
 
 function removePlayer(index) {
   if (index < 0 || index >= players.length) return;
+
   players.splice(index, 1);
   updatePlayerList();
   updateStartButton();
@@ -168,6 +198,7 @@ function removePlayer(index) {
 function updatePlayerList() {
   const container = document.getElementById("playerList");
   const heading = document.getElementById("playerHeading");
+
   if (!container || !heading) return;
 
   heading.textContent = `Players (${players.length})`;
@@ -213,6 +244,7 @@ function updatePlayerList() {
 
     box.addEventListener("drop", event => {
       event.preventDefault();
+
       const fromIndex = draggedPlayerIndex;
       const toIndex = Number(box.dataset.index);
 
@@ -270,6 +302,7 @@ function togglePack(pack) {
   } else {
     enabledPacks.push(pack);
   }
+
   buildPackDropdown();
   updateEquippedPacks();
 }
@@ -301,20 +334,24 @@ function beginGame() {
   }
 
   const pool = enabledPacks.flatMap(pack => WORD_PACKS[pack]);
+
   if (pool.length === 0) {
     alert("The enabled word packs contain no words!");
     return;
   }
 
   players.forEach(ensurePlayerStats);
+
   roundPlayers = [...players];
   roundOutcomeRecorded = false;
   statsExpanded = false;
   revealedImpostors = [];
   votingFinished = false;
   roundImpostorHintsEnabled = impostorHintsEnabled;
+  roundJesterIndex = null;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
+
   allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
   doubleTroubleThisRound = !allImpostorsThisRound &&
     doubleTroubleMode && Math.random() < 0.25;
@@ -342,45 +379,81 @@ function beginGame() {
   roundAllImpostors = allImpostorsThisRound;
   roundDoubleTrouble = doubleTroubleThisRound;
 
+  if (jesterEnabled && !roundAllImpostors) {
+    const eligiblePlayers = roundPlayers
+      .map((_, index) => index)
+      .filter(index => !roundImpostorIndices.includes(index));
+
+    if (eligiblePlayers.length > 0) {
+      roundJesterIndex = eligiblePlayers[
+        Math.floor(Math.random() * eligiblePlayers.length)
+      ];
+    }
+  }
+
   currentPlayer = 0;
   showRole();
 }
 
 function showRole() {
-  if (currentPlayer >= players.length) {
-    starterPlayer = players[Math.floor(Math.random() * players.length)];
+  if (currentPlayer >= roundPlayers.length) {
+    starterPlayer = roundPlayers[Math.floor(Math.random() * roundPlayers.length)];
     showVotingScreen();
     return;
   }
 
   screen.innerHTML = `
-    <h1>${escapeHTML(players[currentPlayer])}</h1>
+    <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+    <p>Pass the device to this player, then reveal their role.</p>
     <button onclick="reveal()">Reveal Word</button>
   `;
 }
 
 function reveal() {
-  const isImpostor = allImpostorsThisRound || impostorIndices.includes(currentPlayer);
+  const isImpostor = roundAllImpostors ||
+    roundImpostorIndices.includes(currentPlayer);
 
-  if (isImpostor && !roundImpostorHintsEnabled) {
+  const isJester = roundJesterIndex === currentPlayer;
+
+  if (isImpostor) {
+    if (!roundImpostorHintsEnabled) {
+      screen.innerHTML = `
+        <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+        <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
+        <p>You have no hint. Figure out the real word from the discussion!</p>
+        <button onclick="nextPlayer()">Hide</button>
+      `;
+      return;
+    }
+
     screen.innerHTML = `
-      <h1>${escapeHTML(players[currentPlayer])}</h1>
+      <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
       <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-      <p>You have no hint. Figure out the real word from the discussion!</p>
+      <p>Your word is only a <b>hint</b>.</p>
+      <h2>${escapeHTML(chosenPair.impostor)}</h2>
       <button onclick="nextPlayer()">Hide</button>
     `;
     return;
   }
 
-  const word = isImpostor ? chosenPair.impostor : chosenPair.real;
+  if (isJester) {
+    screen.innerHTML = `
+      <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+      <h2 style="color:#cc9900;">🎭 You are the JESTER!</h2>
+      <p>Your secret objective is to get voted out.</p>
+      <p>You know the real word:</p>
+      <h2>${escapeHTML(chosenPair.real)}</h2>
+      <p>If the group votes you out, you win your special objective!</p>
+      <button onclick="nextPlayer()">Hide</button>
+    `;
+    return;
+  }
 
   screen.innerHTML = `
-    <h1>${escapeHTML(players[currentPlayer])}</h1>
-    ${isImpostor
-      ? `<h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-         <p>Your word is only a <b>hint</b>.</p>`
-      : "<p>Your word is:</p>"}
-    <h2>${escapeHTML(word)}</h2>
+    <h1>${escapeHTML(roundPlayers[currentPlayer])}</h1>
+    <h2>You are a REGULAR PLAYER!</h2>
+    <p>Your word is:</p>
+    <h2>${escapeHTML(chosenPair.real)}</h2>
     <button onclick="nextPlayer()">Hide</button>
   `;
 }
@@ -407,6 +480,7 @@ function showVotingScreen(message = "") {
 
   screen.innerHTML = `
     <h1>All Words Assigned</h1>
+
     <div class="menuBox" style="text-align:center;">
       <h2>Discussion Time</h2>
       <p><b style="color:#ff3333;">${escapeHTML(starterPlayer)}</b> starts the conversation!</p>
@@ -430,12 +504,16 @@ function castVote(votedIndex) {
   const votedName = roundPlayers[votedIndex];
   const votedIsImpostor = roundAllImpostors ||
     roundImpostorIndices.includes(votedIndex);
+  const votedJester = roundJesterIndex === votedIndex;
 
   if (roundAllImpostors) {
     const winners = roundPlayers.filter((_, index) => index !== votedIndex);
-    recordWinners(winners,
+
+    recordWinners(
+      winners,
       `${votedName} was voted out!`,
-      "Everyone except the voted-out player wins.");
+      "Everyone except the voted-out player wins."
+    );
     return;
   }
 
@@ -454,16 +532,32 @@ function castVote(votedIndex) {
         (_, index) => !roundImpostorIndices.includes(index)
       );
 
-      recordWinners(winners,
+      recordWinners(
+        winners,
         "Both impostors were discovered!",
-        "The players win!");
+        "The players win!"
+      );
       return;
     }
 
     const winners = roundImpostorIndices.map(index => roundPlayers[index]);
-    recordWinners(winners,
-      `${votedName} was a regular player!`,
-      "Both impostors win!");
+
+    if (votedJester) {
+      winners.push(votedName);
+
+      recordWinners(
+        winners,
+        `${votedName} was a regular player! The Jester wins!`,
+        "Both impostors and the Jester win!"
+      );
+    } else {
+      recordWinners(
+        winners,
+        `${votedName} was a regular player!`,
+        "Both impostors win!"
+      );
+    }
+
     return;
   }
 
@@ -472,14 +566,29 @@ function castVote(votedIndex) {
       (_, index) => !roundImpostorIndices.includes(index)
     );
 
-    recordWinners(winners,
+    recordWinners(
+      winners,
       `${votedName} was the impostor!`,
-      "The players win!");
+      "The players win!"
+    );
   } else {
     const winners = roundImpostorIndices.map(index => roundPlayers[index]);
-    recordWinners(winners,
-      `${votedName} was not the impostor!`,
-      "The impostor wins!");
+
+    if (votedJester) {
+      winners.push(votedName);
+
+      recordWinners(
+        winners,
+        `${votedName} was not the impostor! The Jester wins!`,
+        "The impostor and the Jester win!"
+      );
+    } else {
+      recordWinners(
+        winners,
+        `${votedName} was not the impostor!`,
+        "The impostor wins!"
+      );
+    }
   }
 }
 
@@ -534,6 +643,25 @@ function showResults(headline, detail, winners) {
     `;
   }
 
+  let jesterReveal = "";
+
+  if (roundJesterIndex !== null) {
+    const jesterName = roundPlayers[roundJesterIndex];
+    const jesterWon = winners.some(
+      name => name.trim().toLowerCase() === jesterName.trim().toLowerCase()
+    );
+
+    jesterReveal = `
+      <div class="menuBox" style="border:2px solid #cc9900;text-align:center;margin-top:16px;">
+        <h2 style="color:#cc9900;margin-top:0;">🎭 THE JESTER</h2>
+        <h2>${escapeHTML(jesterName)}</h2>
+        <p>${jesterWon
+          ? "The Jester achieved their objective and won!"
+          : "The Jester did not get voted out."}</p>
+      </div>
+    `;
+  }
+
   screen.innerHTML = `
     <div style="text-align:center;margin:10px 0 24px;">
       <p style="font-size:0.9rem;font-weight:bold;letter-spacing:2px;margin-bottom:8px;">
@@ -544,6 +672,7 @@ function showResults(headline, detail, winners) {
     </div>
 
     ${roleReveal}
+    ${jesterReveal}
 
     <div class="menuBox" style="margin-top:16px;text-align:center;">
       <h2 style="margin-top:0;">📝 The Words</h2>
@@ -597,6 +726,7 @@ function showResults(headline, detail, winners) {
 function toggleStats() {
   const panel = document.getElementById("statsPanel");
   const button = document.getElementById("statsToggleButton");
+
   if (!panel || !button) return;
 
   statsExpanded = !statsExpanded;
@@ -662,7 +792,7 @@ function playAgain() {
   roundImpostorIndices = [];
   roundAllImpostors = false;
   roundDoubleTrouble = false;
-  roundImpostorHintsEnabled = true;
+  roundJesterIndex = null;
   roundOutcomeRecorded = false;
   statsExpanded = false;
   revealedImpostors = [];
