@@ -13,6 +13,7 @@ let doubleTroubleThisRound = false;
 let impostorHintsEnabled = true;
 let jesterEnabled = false;
 let bountyHunterEnabled = false;
+let fortuneTellerEnabled = false;
 
 let playerStats = {};
 let roundPlayers = [];
@@ -25,6 +26,9 @@ let roundJesterVotedOut = false;
 let roundBountyHunterIndex = null;
 let roundBountyTargetIndex = null;
 let roundBountyHunterWon = false;
+let roundFortuneTellerIndex = null;
+let roundFortuneTellerTargetIndex = null;
+let roundFortuneTellerWon = false;
 let roundOutcomeRecorded = false;
 let statsExpanded = false;
 let revealedImpostors = [];
@@ -140,6 +144,16 @@ function start() {
                 <small>Knows the real word; wins if voted out</small>
               </span>
             </label>
+
+            <label class="settingToggle">
+              <input type="checkbox" id="fortuneTellerToggle"
+                ${fortuneTellerEnabled ? "checked" : ""}>
+              <span class="toggleSlider"></span>
+              <span class="settingText">
+                <strong>🔮 Fortune Teller</strong>
+                <small>Predict who will be voted out to earn a bonus win</small>
+              </span>
+            </label>
           </div>
 
           <div style="margin-top:12px;">
@@ -210,6 +224,10 @@ function start() {
 
   document.getElementById("bountyHunterToggle").addEventListener("change", event => {
     bountyHunterEnabled = event.target.checked;
+  });
+
+  document.getElementById("fortuneTellerToggle").addEventListener("change", event => {
+    fortuneTellerEnabled = event.target.checked;
   });
 
   updatePlayerList();
@@ -442,6 +460,9 @@ function beginGame() {
   roundBountyHunterIndex = null;
   roundBountyTargetIndex = null;
   roundBountyHunterWon = false;
+  roundFortuneTellerIndex = null;
+  roundFortuneTellerTargetIndex = null;
+  roundFortuneTellerWon = false;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
@@ -509,6 +530,7 @@ function reveal() {
 
   const isJester = roundJesterIndex === currentPlayer;
   const isBountyHunter = roundBountyHunterIndex === currentPlayer;
+  const isFortuneTeller = roundFortuneTellerIndex === currentPlayer;
 
   const teamName = isImpostor ? "IMPOSTOR" : "INNOCENT";
   const teamColor = isImpostor
@@ -519,6 +541,7 @@ function reveal() {
 
   if (isJester) specificRoles.push("Jester");
   if (isBountyHunter) specificRoles.push("Bounty Hunter");
+  if (isFortuneTeller) specificRoles.push("Fortune Teller");
 
   const specificRoleText = specificRoles.length
     ? specificRoles.join(" + ")
@@ -548,8 +571,29 @@ function reveal() {
     mainObjective = "Find and vote out the impostor to win!";
   }
 
-  const extraObjectives =
-    getSpecialObjectives(isJester, isBountyHunter);
+  const extraObjectives = getSpecialObjectives(
+    isJester,
+    isBountyHunter,
+    isFortuneTeller
+  );
+
+  const fortuneTellerSelection = isFortuneTeller
+    ? `
+      <div style="border:2px solid ${ROLE_COLORS.fortuneTeller};border-radius:12px;padding:14px;margin-bottom:18px;text-align:left;">
+        <h3 style="color:${ROLE_COLORS.fortuneTeller};margin:0 0 8px;text-align:center;">🔮 Make Your Prediction</h3>
+        <p style="margin:0 0 12px;">Who do you think will be voted out? Choose carefully, because your prediction cannot be changed once confirmed.</p>
+
+        <select id="fortunePredictionSelect" style="display:block;width:100%;padding:12px;border-radius:8px;font-size:1rem;margin-bottom:10px;">
+          <option value="">Choose a player...</option>
+          ${roundPlayers.map((name, index) => `
+            <option value="${index}">${escapeHTML(name)}</option>
+          `).join("")}
+        </select>
+
+        <p id="fortunePredictionError" style="color:#ff3333;font-weight:bold;margin:0;"></p>
+      </div>
+    `
+    : "";
 
   screen.innerHTML = `
     <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;padding:20px;">
@@ -583,9 +627,55 @@ function reveal() {
         `).join("")}
       </div>
 
-      <button onclick="nextPlayer()">Hide &amp; Pass Device</button>
+      ${fortuneTellerSelection}
+
+      ${isFortuneTeller
+        ? `<button onclick="confirmFortunePrediction()">Confirm Prediction &amp; Hide</button>`
+        : `<button onclick="nextPlayer()">Hide &amp; Pass Device</button>`}
     </div>
   `;
+}
+
+function confirmFortunePrediction() {
+  if (
+    roundFortuneTellerIndex === null ||
+    currentPlayer !== roundFortuneTellerIndex
+  ) {
+    return;
+  }
+
+  if (roundFortuneTellerTargetIndex !== null) {
+    return;
+  }
+
+  const select = document.getElementById("fortunePredictionSelect");
+  const error = document.getElementById("fortunePredictionError");
+
+  if (!select || select.value === "") {
+    if (error) {
+      error.textContent = "Choose a player before confirming!";
+    }
+
+    return;
+  }
+
+  const selectedIndex = Number(select.value);
+
+  if (
+    !Number.isInteger(selectedIndex) ||
+    selectedIndex < 0 ||
+    selectedIndex >= roundPlayers.length
+  ) {
+    if (error) {
+      error.textContent = "Please choose a valid player!";
+    }
+
+    return;
+  }
+
+  roundFortuneTellerTargetIndex = selectedIndex;
+
+  nextPlayer();
 }
 
 function nextPlayer() {
@@ -797,8 +887,11 @@ function showResults(headline, detail, winners) {
     `;
   }
 
-  const { jesterReveal, bountyHunterReveal } =
-    buildSpecialRoleResults(winners);
+  const {
+    jesterReveal,
+    bountyHunterReveal,
+    fortuneTellerReveal
+  } = buildSpecialRoleResults(winners);
 
   screen.innerHTML = `
     <div style="text-align:center;margin:10px 0 24px;">
@@ -813,6 +906,7 @@ function showResults(headline, detail, winners) {
     ${roleReveal}
     ${jesterReveal}
     ${bountyHunterReveal}
+    ${fortuneTellerReveal}
 
     <div class="menuBox" style="margin-top:16px;text-align:center;">
       <h2 style="margin-top:0;">📝 The Words</h2>
@@ -945,6 +1039,9 @@ function playAgain() {
   roundBountyHunterIndex = null;
   roundBountyTargetIndex = null;
   roundBountyHunterWon = false;
+  roundFortuneTellerIndex = null;
+  roundFortuneTellerTargetIndex = null;
+  roundFortuneTellerWon = false;
   roundOutcomeRecorded = false;
   statsExpanded = false;
   revealedImpostors = [];
