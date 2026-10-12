@@ -1,3 +1,4 @@
+
 let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
@@ -456,19 +457,15 @@ function reveal() {
   const isJester = roundJesterIndex === currentPlayer;
   const isBountyHunter = roundBountyHunterIndex === currentPlayer;
 
-  let roleName = "REGULAR PLAYER";
-  let roleEmoji = "🟢";
-  let roleColor = "#444";
+  const teamName = isImpostor ? "IMPOSTOR" : "INNOCENT";
+  const teamColor = isImpostor ? "#ff3333" : "#55dd77";
 
-  if (isImpostor) {
-    roleName = "IMPOSTOR";
-    roleEmoji = "😈";
-    roleColor = "#ff3333";
-  } else if (isJester) {
-    roleName = "JESTER";
-    roleEmoji = "🎭";
-    roleColor = "#cc9900";
-  }
+  const specificRoles = [];
+  if (isJester) specificRoles.push("Jester");
+  if (isBountyHunter) specificRoles.push("Bounty Hunter");
+  const specificRoleText = specificRoles.length
+    ? specificRoles.join(" + ")
+    : "None";
 
   let wordLabel = "REAL WORD";
   let wordContent = escapeHTML(chosenPair.real);
@@ -483,26 +480,37 @@ function reveal() {
     }
   }
 
-  const objectives = [];
+  let mainObjective;
+
+  if (roundAllImpostors) {
+    mainObjective = "Avoid being voted out to win!";
+  } else if (isImpostor) {
+    mainObjective = "Blend in with the innocents and avoid being voted out!";
+  } else {
+    mainObjective = "Find and vote out the impostor to win!";
+  }
+
+  const extraObjectives = [];
 
   if (isJester) {
-    objectives.push("🎭 Get voted out to win your special objective.");
+    extraObjectives.push({
+      title: "EXTRA OBJECTIVE: JESTER",
+      text: "Get voted out to win!"
+    });
   }
 
   if (isBountyHunter) {
-    objectives.push(
-      `🎯 Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Win if they are voted out, regardless of your team's result.`
-    );
-  }
-
-  if (objectives.length === 0) {
-    objectives.push("No special objective. Follow your team's normal win conditions.");
+    extraObjectives.push({
+      title: "EXTRA OBJECTIVE: BOUNTY HUNTER",
+      text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`
+    });
   }
 
   screen.innerHTML = `
     <div class="menuBox" style="max-width:500px;margin:20px auto;text-align:center;padding:20px;">
-      <p style="margin:0 0 6px;font-size:0.85rem;letter-spacing:2px;">YOUR ROLE</p>
-      <h1 style="margin:0 0 20px;color:${roleColor};">${roleEmoji} ${roleName}</h1>
+      <p style="margin:0 0 6px;font-size:0.85rem;letter-spacing:2px;">YOUR TEAM</p>
+      <h1 style="margin:0 0 10px;color:${teamColor};">${teamName}</h1>
+      <p style="margin:0 0 20px;font-size:0.95rem;">Specific Role: <strong>${escapeHTML(specificRoleText)}</strong></p>
 
       <div style="background:#f3f3f3;color:#111;border-radius:12px;padding:16px;margin-bottom:12px;">
         <p style="font-size:0.8rem;font-weight:bold;letter-spacing:1px;margin:0 0 8px;">${wordLabel}</p>
@@ -510,8 +518,14 @@ function reveal() {
       </div>
 
       <div style="border:1px solid #ccc;border-radius:12px;padding:14px;margin-bottom:18px;text-align:left;">
-        <h3 style="margin:0 0 8px;text-align:center;">🎯 Your Objective</h3>
-        ${objectives.map(objective => `<p style="margin:8px 0;">${objective}</p>`).join("")}
+        <h3 style="margin:0 0 12px;text-align:center;">Your Objective</h3>
+        <p style="margin:0;">${mainObjective}</p>
+        ${extraObjectives.map(objective => `
+          <div style="margin-top:12px;padding:10px;background:#26351e;border:1px solid #77bb44;border-radius:8px;color:#fff;">
+            <p style="margin:0 0 5px;color:#ccff77;font-weight:bold;font-size:0.85rem;letter-spacing:0.3px;">★ ${objective.title}</p>
+            <p style="margin:0;">${objective.text}</p>
+          </div>
+        `).join("")}
       </div>
 
       <button onclick="nextPlayer()">Hide &amp; Pass Device</button>
@@ -641,6 +655,12 @@ function castVote(votedIndex) {
 
     if (votedJester) {
       winners.push(votedName);
+      roundImpostorIndices.forEach(index => {
+        const impostorName = roundPlayers[index];
+        if (!winners.some(name => name.trim().toLowerCase() === impostorName.trim().toLowerCase())) {
+          winners.push(impostorName);
+        }
+      });
 
       recordWinners(
         winners,
