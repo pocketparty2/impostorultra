@@ -71,79 +71,151 @@ function start() {
     <div class="menuBox" style="padding:14px;">
       <h2 style="margin:0 0 12px;">Game Settings</h2>
 
-      <h3 style="margin:12px 0 6px;">Game Modes</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
-        <label class="settingToggle">
-          <input type="checkbox" id="allImpostorsToggle"
-            ${allImpostorsMode ? "checked" : ""}>
-          <span class="toggleSlider"></span>
-          <span class="settingText">
-            <strong>😈 Chaos Mode</strong>
-            <small>25% chance: everyone is an impostor</small>
-          </span>
-        </label>
+      <div class="settingsCategory">
+        <button type="button" class="settingsCategoryHeader"
+          aria-expanded="false"
+          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
+          <strong>🎮 Game Modes</strong>
+          <span class="settingsCategoryArrow">＋</span>
+        </button>
 
-        <label class="settingToggle">
-          <input type="checkbox" id="doubleTroubleToggle"
-            ${doubleTroubleMode ? "checked" : ""}>
-          <span class="toggleSlider"></span>
-          <span class="settingText">
-            <strong>👥 Double Trouble</strong>
-            <small>25% chance: two impostors</small>
-          </span>
-        </label>
+        <div class="settingsCategoryContent" hidden>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
+            <label class="settingToggle">
+              <input type="checkbox" id="allImpostorsToggle"
+                ${allImpostorsMode ? "checked" : ""}>
+              <span class="toggleSlider"></span>
+              <span class="settingText">
+                <strong>😈 Chaos Mode</strong>
+                <small>25% chance: everyone is an impostor</small>
+              </span>
+            </label>
+
+            <label class="settingToggle">
+              <input type="checkbox" id="doubleTroubleToggle"
+                ${doubleTroubleMode ? "checked" : ""}>
+              <span class="toggleSlider"></span>
+              <span class="settingText">
+                <strong>👥 Double Trouble</strong>
+                <small>25% chance: two impostors</small>
+              </span>
+            </label>
+          </div>
+        </div>
       </div>
 
-      <h3 style="margin:12px 0 6px;">Impostor</h3>
-      <label class="settingToggle">
-        <input type="checkbox" id="impostorHintsToggle"
-          ${impostorHintsEnabled ? "checked" : ""}>
-        <span class="toggleSlider"></span>
-        <span class="settingText">
-          <strong>💡 Impostor Hints</strong>
-          <small>Give impostors a related word instead of no hint</small>
-        </span>
-      </label>
+      <div class="settingsCategory">
+        <button type="button" class="settingsCategoryHeader"
+          aria-expanded="false"
+          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
+          <strong>🕵️ Impostor Settings</strong>
+          <span class="settingsCategoryArrow">＋</span>
+        </button>
 
-      <h3 style="margin:12px 0 6px;">Special Roles</h3>
-      <p style="margin:0 0 8px;font-size:0.9rem;">Roles are optional and can be enabled independently.</p>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">
-        <div>
-          <h4 style="margin:4px 0;">🟢 Non-Impostor</h4>
+        <div class="settingsCategoryContent" hidden>
           <label class="settingToggle">
-            <input type="checkbox" id="jesterToggle"
-              ${jesterEnabled ? "checked" : ""}>
+            <input type="checkbox" id="impostorHintsToggle"
+              ${impostorHintsEnabled ? "checked" : ""}>
             <span class="toggleSlider"></span>
             <span class="settingText">
-              <strong>🎭 Jester</strong>
-              <small>Knows the real word; wins if voted out</small>
+              <strong>💡 Impostor Hints</strong>
+              <small>Give impostors a related word instead of no hint</small>
             </span>
           </label>
         </div>
+      </div>
 
-        <div>
-          <h4 style="margin:4px 0;">🔴 Impostor</h4>
-          <p style="font-size:0.85rem;margin:4px 0;">No roles available yet.</p>
-        </div>
+      <div class="settingsCategory">
+        <button type="button" class="settingsCategoryHeader"
+          aria-expanded="false"
+          style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#333;color:white;padding:12px;margin:6px 0;border-radius:8px;">
+          <strong>🎭 Special Roles</strong>
+          <span class="settingsCategoryArrow">＋</span>
+        </button>
 
-        <div>
-          <h4 style="margin:4px 0;">🟣 Both</h4>
-          <label class="settingToggle">
-            <input type="checkbox" id="bountyHunterToggle"
-              ${bountyHunterEnabled ? "checked" : ""}>
-            <span class="toggleSlider"></span>
-            <span class="settingText">
-              <strong>🎯 Bounty Hunter</strong>
-              <small>Wins if their secret target is voted out</small>
-            </span>
-          </label>
+        <div class="settingsCategoryContent" hidden>
+          <p style="margin:4px 0 8px;font-size:0.9rem;">
+            Roles are optional and can be enabled independently.
+          </p>
+
+          <div class="settingsCategory">
+            <button type="button" class="settingsCategoryHeader"
+              aria-expanded="false"
+              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#e8f8ec;color:#155b2a;padding:10px;margin:6px 0;border-radius:8px;">
+              <strong>🟢 Non-Impostor</strong>
+              <span class="settingsCategoryArrow">＋</span>
+            </button>
+
+            <div class="settingsCategoryContent" hidden>
+              <label class="settingToggle">
+                <input type="checkbox" id="jesterToggle"
+                  ${jesterEnabled ? "checked" : ""}>
+                <span class="toggleSlider"></span>
+                <span class="settingText">
+                  <strong>🎭 Jester</strong>
+                  <small>Knows the real word; wins if voted out</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settingsCategory">
+            <button type="button" class="settingsCategoryHeader"
+              aria-expanded="false"
+              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#ffe8e8;color:#8b2020;padding:10px;margin:6px 0;border-radius:8px;">
+              <strong>🔴 Impostor</strong>
+              <span class="settingsCategoryArrow">＋</span>
+            </button>
+
+            <div class="settingsCategoryContent" hidden>
+              <p style="font-size:0.85rem;margin:4px 0;">
+                No roles available yet.
+              </p>
+            </div>
+          </div>
+
+          <div class="settingsCategory">
+            <button type="button" class="settingsCategoryHeader"
+              aria-expanded="false"
+              style="width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:#eee8ff;color:#49358b;padding:10px;margin:6px 0;border-radius:8px;">
+              <strong>🟣 Both</strong>
+              <span class="settingsCategoryArrow">＋</span>
+            </button>
+
+            <div class="settingsCategoryContent" hidden>
+              <label class="settingToggle">
+                <input type="checkbox" id="bountyHunterToggle"
+                  ${bountyHunterEnabled ? "checked" : ""}>
+                <span class="toggleSlider"></span>
+                <span class="settingText">
+                  <strong>🎯 Bounty Hunter</strong>
+                  <small>Wins if their secret target is voted out</small>
+                </span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
   `;
+
+  document.querySelectorAll(".settingsCategoryHeader").forEach(header => {
+    header.addEventListener("click", () => {
+      const content = header.nextElementSibling;
+      const expanded = header.getAttribute("aria-expanded") === "true";
+
+      header.setAttribute("aria-expanded", String(!expanded));
+      content.hidden = expanded;
+
+      const arrow = header.querySelector(".settingsCategoryArrow");
+
+      if (arrow) {
+        arrow.textContent = expanded ? "＋" : "−";
+      }
+    });
+  });
 
   document.getElementById("allImpostorsToggle").addEventListener("change", event => {
     allImpostorsMode = event.target.checked;
