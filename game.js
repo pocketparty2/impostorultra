@@ -10,12 +10,14 @@ let allImpostorsMode = false;
 let allImpostorsThisRound = false;
 let doubleTroubleMode = false;
 let doubleTroubleThisRound = false;
+let impostorHintsEnabled = true;
 
 let playerStats = {};
 let roundPlayers = [];
 let roundImpostorIndices = [];
 let roundAllImpostors = false;
 let roundDoubleTrouble = false;
+let roundImpostorHintsEnabled = true;
 let roundOutcomeRecorded = false;
 let statsExpanded = false;
 let revealedImpostors = [];
@@ -83,6 +85,18 @@ function start() {
           <small>25% chance of having two impostors</small>
         </span>
       </label>
+
+      <h3>Impostor Settings</h3>
+
+      <label class="settingToggle">
+        <input type="checkbox" id="impostorHintsToggle"
+          ${impostorHintsEnabled ? "checked" : ""}>
+        <span class="toggleSlider"></span>
+        <span class="settingText">
+          <strong>💡 Impostor Hints</strong>
+          <small>Give impostors a hint instead of leaving them completely in the dark</small>
+        </span>
+      </label>
     </div>
 
     <button id="startBtn" onclick="beginGame()" style="margin-top:20px;">Start Game</button>
@@ -102,6 +116,10 @@ function start() {
       allImpostorsMode = false;
       document.getElementById("allImpostorsToggle").checked = false;
     }
+  });
+
+  document.getElementById("impostorHintsToggle").addEventListener("change", event => {
+    impostorHintsEnabled = event.target.checked;
   });
 
   updatePlayerList();
@@ -294,6 +312,7 @@ function beginGame() {
   statsExpanded = false;
   revealedImpostors = [];
   votingFinished = false;
+  roundImpostorHintsEnabled = impostorHintsEnabled;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
   allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
@@ -342,6 +361,17 @@ function showRole() {
 
 function reveal() {
   const isImpostor = allImpostorsThisRound || impostorIndices.includes(currentPlayer);
+
+  if (isImpostor && !roundImpostorHintsEnabled) {
+    screen.innerHTML = `
+      <h1>${escapeHTML(players[currentPlayer])}</h1>
+      <h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
+      <p>You have no hint. Figure out the real word from the discussion!</p>
+      <button onclick="nextPlayer()">Hide</button>
+    `;
+    return;
+  }
+
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
@@ -632,6 +662,7 @@ function playAgain() {
   roundImpostorIndices = [];
   roundAllImpostors = false;
   roundDoubleTrouble = false;
+  roundImpostorHintsEnabled = true;
   roundOutcomeRecorded = false;
   statsExpanded = false;
   revealedImpostors = [];
