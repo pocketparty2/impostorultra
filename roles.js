@@ -1,9 +1,9 @@
-
 const ROLE_COLORS = {
   innocent: "#55dd77",
   impostor: "#ff3333",
   jester: "#cc9900",
-  bountyHunter: "#7b61ff"
+  bountyHunter: "#7b61ff",
+  fortuneTeller: "#00bcd4"
 };
 
 function assignSpecialRoles() {
@@ -12,6 +12,9 @@ function assignSpecialRoles() {
   roundBountyHunterIndex = null;
   roundBountyTargetIndex = null;
   roundBountyHunterWon = false;
+  roundFortuneTellerIndex = null;
+  roundFortuneTellerTargetIndex = null;
+  roundFortuneTellerWon = false;
 
   if (jesterEnabled && !roundAllImpostors) {
     const eligiblePlayers = roundPlayers
@@ -26,7 +29,9 @@ function assignSpecialRoles() {
   }
 
   if (bountyHunterEnabled) {
-    roundBountyHunterIndex = Math.floor(Math.random() * roundPlayers.length);
+    roundBountyHunterIndex = Math.floor(
+      Math.random() * roundPlayers.length
+    );
 
     const possibleTargets = roundPlayers
       .map((_, index) => index)
@@ -36,9 +41,25 @@ function assignSpecialRoles() {
       Math.floor(Math.random() * possibleTargets.length)
     ];
   }
+
+  if (fortuneTellerEnabled && !roundAllImpostors) {
+    const eligiblePlayers = roundPlayers
+      .map((_, index) => index)
+      .filter(index => !roundImpostorIndices.includes(index));
+
+    if (eligiblePlayers.length > 0) {
+      roundFortuneTellerIndex = eligiblePlayers[
+        Math.floor(Math.random() * eligiblePlayers.length)
+      ];
+    }
+  }
 }
 
-function getSpecialObjectives(isJester, isBountyHunter) {
+function getSpecialObjectives(
+  isJester,
+  isBountyHunter,
+  isFortuneTeller
+) {
   const objectives = [];
 
   if (isJester) {
@@ -52,8 +73,18 @@ function getSpecialObjectives(isJester, isBountyHunter) {
   if (isBountyHunter) {
     objectives.push({
       title: "EXTRA OBJECTIVE: BOUNTY HUNTER",
-      text: `Your secret target is <strong>${escapeHTML(roundPlayers[roundBountyTargetIndex])}</strong>. Get them voted out to win, regardless of your team's result!`,
+      text: `Your secret target is <strong>${escapeHTML(
+        roundPlayers[roundBountyTargetIndex]
+      )}</strong>. Get them voted out to win, regardless of your team's result!`,
       color: ROLE_COLORS.bountyHunter
+    });
+  }
+
+  if (isFortuneTeller) {
+    objectives.push({
+      title: "EXTRA OBJECTIVE: FORTUNE TELLER",
+      text: "Predict who will be voted out this round. If your prediction is correct, you earn a win!",
+      color: ROLE_COLORS.fortuneTeller
     });
   }
 
@@ -68,6 +99,10 @@ function handleSpecialRoleVote(votedIndex) {
   if (roundJesterIndex === votedIndex) {
     roundJesterVotedOut = true;
   }
+
+  if (roundFortuneTellerTargetIndex === votedIndex) {
+    roundFortuneTellerWon = true;
+  }
 }
 
 function applySpecialRoleWinners(winners) {
@@ -77,7 +112,9 @@ function applySpecialRoleWinners(winners) {
     const jesterName = roundPlayers[roundJesterIndex];
 
     finalWinners = finalWinners.filter(
-      name => name.trim().toLowerCase() !== jesterName.trim().toLowerCase()
+      name =>
+        name.trim().toLowerCase() !==
+        jesterName.trim().toLowerCase()
     );
   }
 
@@ -85,11 +122,27 @@ function applySpecialRoleWinners(winners) {
     const bountyHunterName = roundPlayers[roundBountyHunterIndex];
 
     const alreadyWinner = finalWinners.some(
-      name => name.trim().toLowerCase() === bountyHunterName.trim().toLowerCase()
+      name =>
+        name.trim().toLowerCase() ===
+        bountyHunterName.trim().toLowerCase()
     );
 
     if (!alreadyWinner) {
       finalWinners.push(bountyHunterName);
+    }
+  }
+
+  if (roundFortuneTellerWon && roundFortuneTellerIndex !== null) {
+    const fortuneTellerName = roundPlayers[roundFortuneTellerIndex];
+
+    const alreadyWinner = finalWinners.some(
+      name =>
+        name.trim().toLowerCase() ===
+        fortuneTellerName.trim().toLowerCase()
+    );
+
+    if (!alreadyWinner) {
+      finalWinners.push(fortuneTellerName);
     }
   }
 
@@ -99,12 +152,15 @@ function applySpecialRoleWinners(winners) {
 function buildSpecialRoleResults(winners) {
   let jesterReveal = "";
   let bountyHunterReveal = "";
+  let fortuneTellerReveal = "";
 
   if (roundJesterIndex !== null) {
     const jesterName = roundPlayers[roundJesterIndex];
 
     const jesterWon = winners.some(
-      name => name.trim().toLowerCase() === jesterName.trim().toLowerCase()
+      name =>
+        name.trim().toLowerCase() ===
+        jesterName.trim().toLowerCase()
     );
 
     jesterReveal = `
@@ -134,5 +190,33 @@ function buildSpecialRoleResults(winners) {
     `;
   }
 
-  return { jesterReveal, bountyHunterReveal };
+  if (roundFortuneTellerIndex !== null) {
+    const fortuneTellerName = roundPlayers[roundFortuneTellerIndex];
+
+    const predictionName =
+      roundFortuneTellerTargetIndex !== null
+        ? roundPlayers[roundFortuneTellerTargetIndex]
+        : null;
+
+    fortuneTellerReveal = `
+      <div class="menuBox" style="border:2px solid ${ROLE_COLORS.fortuneTeller};text-align:center;margin-top:16px;">
+        <h2 style="color:${ROLE_COLORS.fortuneTeller};margin-top:0;">🔮 THE FORTUNE TELLER</h2>
+        <h2>${escapeHTML(fortuneTellerName)}</h2>
+
+        ${predictionName !== null
+          ? `<p>Their prediction was <strong>${escapeHTML(predictionName)}</strong>.</p>`
+          : "<p>No prediction was recorded.</p>"}
+
+        <p>${roundFortuneTellerWon
+          ? "The prediction was correct! The Fortune Teller earned a win!"
+          : "The prediction was incorrect. No bonus win was earned."}</p>
+      </div>
+    `;
+  }
+
+  return {
+    jesterReveal,
+    bountyHunterReveal,
+    fortuneTellerReveal
+  };
 }
