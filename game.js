@@ -1,3 +1,4 @@
+
 let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
@@ -14,7 +15,18 @@ function start() {
     <div class="menuBox">
       <h2>Players</h2>
       <div id="playerList"></div>
-      <button onclick="addPlayer()">Add Player</button>
+
+      <div class="addPlayerArea">
+        <input
+          type="text"
+          id="playerNameInput"
+          placeholder="Enter player name..."
+          maxlength="30"
+          autocomplete="off"
+        >
+        <button onclick="addPlayer()">Add Player</button>
+        <p id="playerError" style="color:#ff3333; font-weight:bold;"></p>
+      </div>
     </div>
 
     <div class="menuBox">
@@ -31,15 +43,38 @@ function start() {
   updateEquippedPacks();
   buildPackDropdown();
   updateStartButton();
+
+  document.getElementById("playerNameInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      addPlayer();
+    }
+  });
 }
 
 function addPlayer() {
-  const name = prompt("Enter player name:");
-  if (name && name.trim() !== "") {
-    players.push(name.trim());
-    updatePlayerList();
-    updateStartButton();
+  const input = document.getElementById("playerNameInput");
+  const error = document.getElementById("playerError");
+  const name = input.value.trim();
+
+  if (name.length < 2) {
+    error.textContent = "Name must be at least 2 characters long!";
+    input.focus();
+    return;
   }
+
+  if (players.some(player => player.toLowerCase() === name.toLowerCase())) {
+    error.textContent = "That player has already been added!";
+    input.focus();
+    return;
+  }
+
+  players.push(name);
+  input.value = "";
+  error.textContent = "";
+
+  updatePlayerList();
+  updateStartButton();
+  input.focus();
 }
 
 function removePlayer(index) {
@@ -50,16 +85,27 @@ function removePlayer(index) {
 
 function updatePlayerList() {
   const container = document.getElementById("playerList");
+
   container.innerHTML = players
     .map(
       (p, i) =>
-        `<div class="playerBox">${p} <span class="removeBtn" onclick="removePlayer(${i})">✕</span></div>`
+        `<div class="playerBox">${escapeHTML(p)} <span class="removeBtn" onclick="removePlayer(${i})">✕</span></div>`
     )
     .join("");
 
   if (players.length === 0) {
-    container.innerHTML = "<p>No players yet</p>";
+    container.innerHTML = "<p>No players added yet</p>";
   }
+}
+
+function escapeHTML(text) {
+  return text.replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
 }
 
 function updateEquippedPacks() {
@@ -71,7 +117,7 @@ function updateEquippedPacks() {
   }
 
   container.innerHTML = enabledPacks
-    .map(pack => `<div class="packBox">${pack}</div>`)
+    .map(pack => `<div class="packBox">${escapeHTML(pack)}</div>`)
     .join("");
 }
 
@@ -90,7 +136,6 @@ function buildPackDropdown() {
 
     btn.textContent = pack;
     btn.className = enabled ? "" : "disabledPack";
-
     btn.onclick = () => togglePack(pack);
 
     container.appendChild(btn);
@@ -114,7 +159,7 @@ function updateStartButton() {
   if (players.length < 3) {
     btn.disabled = true;
     btn.style.background = "#ff9999";
-    btn.textContent = "Insufficient players";
+    btn.textContent = `Need ${3 - players.length} more player${3 - players.length === 1 ? "" : "s"}`;
   } else {
     btn.disabled = false;
     btn.style.background = "#ff3333";
@@ -123,14 +168,24 @@ function updateStartButton() {
 }
 
 function beginGame() {
+  if (players.length < 3) {
+    alert("You need at least 3 players!");
+    return;
+  }
+
   if (enabledPacks.length === 0) {
     alert("Enable at least one word pack!");
     return;
   }
 
   const pool = enabledPacks.flatMap(pack => WORD_PACKS[pack]);
-  chosenPair = pool[Math.floor(Math.random() * pool.length)];
 
+  if (pool.length === 0) {
+    alert("The enabled word packs contain no words!");
+    return;
+  }
+
+  chosenPair = pool[Math.floor(Math.random() * pool.length)];
   impostorIndex = Math.floor(Math.random() * players.length);
   currentPlayer = 0;
 
@@ -139,14 +194,12 @@ function beginGame() {
 
 function showRole() {
   if (currentPlayer >= players.length) {
-
-    // Pick a random starter
     starterPlayer = players[Math.floor(Math.random() * players.length)];
 
     screen.innerHTML = `
       <h1>All words assigned</h1>
       <p style="color:#ff3333; font-weight:bold;">
-        ${starterPlayer} starts the conversation!
+        ${escapeHTML(starterPlayer)} starts the conversation!
       </p>
       <p>Discuss and give clues!</p>
       <button onclick="startReveal()">Reveal Impostor</button>
@@ -155,7 +208,7 @@ function showRole() {
   }
 
   screen.innerHTML = `
-    <h1>${players[currentPlayer]}</h1>
+    <h1>${escapeHTML(players[currentPlayer])}</h1>
     <button onclick="reveal()">Reveal Word</button>
   `;
 }
@@ -165,14 +218,14 @@ function reveal() {
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
-    <h1>${players[currentPlayer]}</h1>
+    <h1>${escapeHTML(players[currentPlayer])}</h1>
     ${
       isImpostor
         ? `<h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
            <p>Your word is only a <b>hint</b>.</p>`
         : `<p>Your word is:</p>`
     }
-    <h2>${word}</h2>
+    <h2>${escapeHTML(word)}</h2>
 
     <button onclick="nextPlayer()">Hide</button>
   `;
@@ -186,9 +239,9 @@ function nextPlayer() {
 function startReveal() {
   screen.innerHTML = `
     <h1>The impostor was:</h1>
-    <h2>${players[impostorIndex]}</h2>
-    <p>Real word: <b>${chosenPair.real}</b></p>
-    <p>Impostor hint: <b>${chosenPair.impostor}</b></p>
+    <h2>${escapeHTML(players[impostorIndex])}</h2>
+    <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
+    <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
 
     <button onclick="start()">Play Again</button>
   `;
