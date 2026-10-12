@@ -1,4 +1,3 @@
-
 /* GLOBAL RESET */
 * {
   box-sizing: border-box;
@@ -216,6 +215,77 @@ button:disabled {
 #playerError {
   margin-bottom: 0;
   font-size: 0.9rem;
+}
+
+
+/* GAME SETTINGS TOGGLE */
+.settingToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.settingToggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.toggleSlider {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  background: #bdbdbd;
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.toggleSlider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.settingToggle input:checked + .toggleSlider {
+  background: #ccff33;
+}
+
+.settingToggle input:checked + .toggleSlider::before {
+  transform: translateX(20px);
+}
+
+.settingToggle input:focus-visible + .toggleSlider {
+  outline: 2px solid #000000;
+  outline-offset: 3px;
+}
+
+.settingText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settingText strong {
+  font-size: 1rem;
+  color: #000000;
+}
+
+.settingText small {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: #555555;
 }
 
 /* MOBILE LAYOUT */
