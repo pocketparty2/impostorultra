@@ -1,19 +1,21 @@
-
 let players = [];
 let currentPlayer = 0;
 let chosenPair = null;
 let impostorIndex = null;
 let starterPlayer = null;
+let draggedPlayerIndex = null;
 let screen = document.getElementById("screen");
 
 function start() {
   currentPlayer = 0;
+  draggedPlayerIndex = null;
 
   screen.innerHTML = `
     <h1>Word Impostor</h1>
 
     <div class="menuBox">
-      <h2>Players</h2>
+      <h2>Players (${players.length})</h2>
+      <p>Drag the ⠿ handle to change player order.</p>
       <div id="playerList"></div>
 
       <div class="addPlayerArea">
@@ -25,7 +27,7 @@ function start() {
           autocomplete="off"
         >
         <button onclick="addPlayer()">Add Player</button>
-        <p id="playerError" style="color:#ff3333; font-weight:bold;"></p>
+        <p id="playerError" style="color:#ff3333;font-weight:bold;"></p>
       </div>
     </div>
 
@@ -88,18 +90,67 @@ function updatePlayerList() {
 
   container.innerHTML = players
     .map(
-      (p, i) =>
-        `<div class="playerBox">${escapeHTML(p)} <span class="removeBtn" onclick="removePlayer(${i})">✕</span></div>`
+      (p, i) => `
+        <div class="playerBox" data-index="${i}">
+          <span class="dragHandle" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
+          <span class="playerName">${escapeHTML(p)}</span>
+          <span class="removeBtn" onclick="removePlayer(${i})" title="Remove player">✕</span>
+        </div>
+      `
     )
     .join("");
 
   if (players.length === 0) {
     container.innerHTML = "<p>No players added yet</p>";
   }
+
+  container.querySelectorAll(".dragHandle").forEach(handle => {
+    handle.addEventListener("pointerdown", event => {
+      event.preventDefault();
+
+      const box = handle.closest(".playerBox");
+      draggedPlayerIndex = Number(box.dataset.index);
+      box.classList.add("dragging");
+
+      handle.setPointerCapture(event.pointerId);
+    });
+
+    handle.addEventListener("pointerup", event => {
+      if (draggedPlayerIndex === null) return;
+
+      const target = document.elementFromPoint(
+        event.clientX,
+        event.clientY
+      );
+
+      const targetBox = target?.closest(".playerBox");
+      const fromIndex = draggedPlayerIndex;
+      const toIndex = targetBox ? Number(targetBox.dataset.index) : fromIndex;
+
+      if (
+        targetBox &&
+        Number.isInteger(toIndex) &&
+        toIndex >= 0 &&
+        toIndex < players.length &&
+        fromIndex !== toIndex
+      ) {
+        const movedPlayer = players.splice(fromIndex, 1)[0];
+        players.splice(toIndex, 0, movedPlayer);
+      }
+
+      draggedPlayerIndex = null;
+      updatePlayerList();
+    });
+
+    handle.addEventListener("pointercancel", () => {
+      draggedPlayerIndex = null;
+      updatePlayerList();
+    });
+  });
 }
 
 function escapeHTML(text) {
-  return text.replace(/[&<>"']/g, character => ({
+  return String(text).replace(/[&<>"']/g, character => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -198,7 +249,7 @@ function showRole() {
 
     screen.innerHTML = `
       <h1>All words assigned</h1>
-      <p style="color:#ff3333; font-weight:bold;">
+      <p style="color:#ff3333;font-weight:bold;">
         ${escapeHTML(starterPlayer)} starts the conversation!
       </p>
       <p>Discuss and give clues!</p>
