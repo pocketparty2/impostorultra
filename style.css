@@ -158,3 +158,44 @@ button:hover:not(:disabled) {
   margin-bottom: 0;
 }
 
+
+/* PLAYER REORDERING */
+#playerList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.playerBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+}
+
+.dragHandle {
+  display: inline-block;
+  color: #777777;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.playerBox.dragging {
+  opacity: 0.45;
+}
+
+.playerName {
+  overflow-wrap: anywhere;
+}
+
+.removeBtn {
+  flex-shrink: 0;
+}
