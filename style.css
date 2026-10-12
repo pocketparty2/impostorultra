@@ -277,6 +277,52 @@ button:disabled {
   gap: 4px;
 }
 
+.settingsCategory {
+  border: 1px solid #888;
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.settingsCategoryHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.settingsCategoryHeader:hover {
+  filter: brightness(0.9);
+}
+
+.settingsCategoryArrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.settingsCategoryHeader[aria-expanded="true"] .settingsCategoryArrow {
+  transform: rotate(180deg);
+}
+
+.settingsCategoryContent {
+  padding: 0 14px 14px;
+}
+
+.settingsCategoryContent[hidden] {
+  display: none;
+}
+
 .settingText strong {
   font-size: 1rem;
   color: #000000;
