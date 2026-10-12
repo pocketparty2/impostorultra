@@ -6,7 +6,6 @@ let starterPlayer = null;
 let draggedPlayerIndex = null;
 let screen = document.getElementById("screen");
 
-
 function start() {
   currentPlayer = 0;
   draggedPlayerIndex = null;
@@ -16,7 +15,6 @@ function start() {
 
     <div class="menuBox">
       <h2>Players (${players.length})</h2>
-      <p>Drag the ⠿ handle to change player order.</p>
       <div id="playerList"></div>
 
       <div class="addPlayerArea">
