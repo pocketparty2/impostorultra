@@ -27,11 +27,7 @@ function ensurePlayerStats(name) {
   const key = name.trim().toLowerCase();
 
   if (!playerStats[key]) {
-    playerStats[key] = {
-      name: name,
-      wins: 0,
-      streak: 0
-    };
+    playerStats[key] = { name, wins: 0, streak: 0 };
   } else {
     playerStats[key].name = name;
   }
@@ -40,7 +36,6 @@ function ensurePlayerStats(name) {
 function start() {
   currentPlayer = 0;
   draggedPlayerIndex = null;
-
   players.forEach(ensurePlayerStats);
 
   screen.innerHTML = `
@@ -49,15 +44,10 @@ function start() {
     <div class="menuBox">
       <h2 id="playerHeading">Players (0)</h2>
       <div id="playerList"></div>
-
       <div class="addPlayerArea">
-        <input
-          type="text"
-          id="playerNameInput"
-          placeholder="Enter player name..."
-          maxlength="30"
-          autocomplete="off"
-        >
+        <input type="text" id="playerNameInput"
+          placeholder="Enter player name..." maxlength="30"
+          autocomplete="off">
         <button onclick="addPlayer()">Add Player</button>
         <p id="playerError" style="color:#ff3333;font-weight:bold;"></p>
       </div>
@@ -75,11 +65,8 @@ function start() {
       <h3>Impostor Count Settings</h3>
 
       <label class="settingToggle">
-        <input
-          type="checkbox"
-          id="allImpostorsToggle"
-          ${allImpostorsMode ? "checked" : ""}
-        >
+        <input type="checkbox" id="allImpostorsToggle"
+          ${allImpostorsMode ? "checked" : ""}>
         <span class="toggleSlider"></span>
         <span class="settingText">
           <strong>😈 Chaos Mode</strong>
@@ -88,11 +75,8 @@ function start() {
       </label>
 
       <label class="settingToggle">
-        <input
-          type="checkbox"
-          id="doubleTroubleToggle"
-          ${doubleTroubleMode ? "checked" : ""}
-        >
+        <input type="checkbox" id="doubleTroubleToggle"
+          ${doubleTroubleMode ? "checked" : ""}>
         <span class="toggleSlider"></span>
         <span class="settingText">
           <strong>👥 Double Trouble Mode</strong>
@@ -106,7 +90,6 @@ function start() {
 
   document.getElementById("allImpostorsToggle").addEventListener("change", event => {
     allImpostorsMode = event.target.checked;
-
     if (allImpostorsMode) {
       doubleTroubleMode = false;
       document.getElementById("doubleTroubleToggle").checked = false;
@@ -115,7 +98,6 @@ function start() {
 
   document.getElementById("doubleTroubleToggle").addEventListener("change", event => {
     doubleTroubleMode = event.target.checked;
-
     if (doubleTroubleMode) {
       allImpostorsMode = false;
       document.getElementById("allImpostorsToggle").checked = false;
@@ -128,9 +110,7 @@ function start() {
   updateStartButton();
 
   document.getElementById("playerNameInput").addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      addPlayer();
-    }
+    if (event.key === "Enter") addPlayer();
   });
 }
 
@@ -153,10 +133,8 @@ function addPlayer() {
 
   players.push(name);
   ensurePlayerStats(name);
-
   input.value = "";
   error.textContent = "";
-
   updatePlayerList();
   updateStartButton();
   input.focus();
@@ -164,7 +142,6 @@ function addPlayer() {
 
 function removePlayer(index) {
   if (index < 0 || index >= players.length) return;
-
   players.splice(index, 1);
   updatePlayerList();
   updateStartButton();
@@ -173,27 +150,18 @@ function removePlayer(index) {
 function updatePlayerList() {
   const container = document.getElementById("playerList");
   const heading = document.getElementById("playerHeading");
-
   if (!container || !heading) return;
 
   heading.textContent = `Players (${players.length})`;
 
-  container.innerHTML = players
-    .map(
-      (p, i) => `
-        <div class="playerBox" data-index="${i}">
-          <span
-            class="dragHandle"
-            title="Drag to reorder"
-            aria-label="Drag to reorder"
-            draggable="true"
-          >⠿</span>
-          <span class="playerName">${escapeHTML(p)}</span>
-          <span class="removeBtn" data-remove="${i}" title="Remove player">✕</span>
-        </div>
-      `
-    )
-    .join("");
+  container.innerHTML = players.map((p, i) => `
+    <div class="playerBox" data-index="${i}">
+      <span class="dragHandle" title="Drag to reorder"
+        aria-label="Drag to reorder" draggable="true">⠿</span>
+      <span class="playerName">${escapeHTML(p)}</span>
+      <span class="removeBtn" data-remove="${i}" title="Remove player">✕</span>
+    </div>
+  `).join("");
 
   if (players.length === 0) {
     container.innerHTML = "<p>No players added yet</p>";
@@ -201,28 +169,21 @@ function updatePlayerList() {
   }
 
   container.querySelectorAll(".removeBtn").forEach(button => {
-    button.addEventListener("click", () => {
-      removePlayer(Number(button.dataset.remove));
-    });
+    button.addEventListener("click", () => removePlayer(Number(button.dataset.remove)));
   });
 
   container.querySelectorAll(".dragHandle").forEach(handle => {
     handle.addEventListener("dragstart", event => {
       const box = handle.closest(".playerBox");
       draggedPlayerIndex = Number(box.dataset.index);
-
       event.dataTransfer.effectAllowed = "move";
       event.dataTransfer.setData("text/plain", String(draggedPlayerIndex));
-
       box.classList.add("dragging");
     });
 
     handle.addEventListener("dragend", () => {
       draggedPlayerIndex = null;
-
-      container.querySelectorAll(".playerBox").forEach(box => {
-        box.classList.remove("dragging");
-      });
+      container.querySelectorAll(".playerBox").forEach(box => box.classList.remove("dragging"));
     });
   });
 
@@ -234,23 +195,14 @@ function updatePlayerList() {
 
     box.addEventListener("drop", event => {
       event.preventDefault();
-
       const fromIndex = draggedPlayerIndex;
       const toIndex = Number(box.dataset.index);
 
-      if (
-        fromIndex === null ||
-        !Number.isInteger(fromIndex) ||
-        fromIndex < 0 ||
-        fromIndex >= players.length ||
-        fromIndex === toIndex
-      ) {
-        return;
-      }
+      if (fromIndex === null || fromIndex < 0 ||
+          fromIndex >= players.length || fromIndex === toIndex) return;
 
       const movedPlayer = players.splice(fromIndex, 1)[0];
       players.splice(toIndex, 0, movedPlayer);
-
       draggedPlayerIndex = null;
       updatePlayerList();
     });
@@ -271,14 +223,9 @@ function updateEquippedPacks() {
   const container = document.getElementById("equippedPacks");
   if (!container) return;
 
-  if (enabledPacks.length === 0) {
-    container.innerHTML = "<p>No packs enabled</p>";
-    return;
-  }
-
-  container.innerHTML = enabledPacks
-    .map(pack => `<div class="packBox">${escapeHTML(pack)}</div>`)
-    .join("");
+  container.innerHTML = enabledPacks.length
+    ? enabledPacks.map(pack => `<div class="packBox">${escapeHTML(pack)}</div>`).join("")
+    : "<p>No packs enabled</p>";
 }
 
 function togglePackDropdown() {
@@ -291,13 +238,10 @@ function buildPackDropdown() {
   container.innerHTML = "";
 
   Object.keys(WORD_PACKS).forEach(pack => {
-    const enabled = enabledPacks.includes(pack);
     const btn = document.createElement("button");
-
     btn.textContent = pack;
-    btn.className = enabled ? "" : "disabledPack";
+    btn.className = enabledPacks.includes(pack) ? "" : "disabledPack";
     btn.onclick = () => togglePack(pack);
-
     container.appendChild(btn);
   });
 }
@@ -308,7 +252,6 @@ function togglePack(pack) {
   } else {
     enabledPacks.push(pack);
   }
-
   buildPackDropdown();
   updateEquippedPacks();
 }
@@ -320,7 +263,7 @@ function updateStartButton() {
   if (players.length < 3) {
     btn.disabled = true;
     btn.style.background = "#ff9999";
-    btn.textContent = `Need ${3 - players.length} more player${3 - players.length === 1 ? "" : "s"}`;
+    btn.textContent = `Need ${3 - players.length} more player${players.length === 2 ? "" : "s"}`;
   } else {
     btn.disabled = false;
     btn.style.background = "#ff3333";
@@ -340,14 +283,12 @@ function beginGame() {
   }
 
   const pool = enabledPacks.flatMap(pack => WORD_PACKS[pack]);
-
   if (pool.length === 0) {
     alert("The enabled word packs contain no words!");
     return;
   }
 
   players.forEach(ensurePlayerStats);
-
   roundPlayers = [...players];
   roundOutcomeRecorded = false;
   statsExpanded = false;
@@ -355,12 +296,9 @@ function beginGame() {
   votingFinished = false;
 
   chosenPair = pool[Math.floor(Math.random() * pool.length)];
-
   allImpostorsThisRound = allImpostorsMode && Math.random() < 0.25;
-  doubleTroubleThisRound =
-    !allImpostorsThisRound &&
-    doubleTroubleMode &&
-    Math.random() < 0.25;
+  doubleTroubleThisRound = !allImpostorsThisRound &&
+    doubleTroubleMode && Math.random() < 0.25;
 
   impostorIndices = [];
 
@@ -371,8 +309,7 @@ function beginGame() {
 
     for (let i = shuffledIndices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledIndices[i], shuffledIndices[j]] =
-        [shuffledIndices[j], shuffledIndices[i]];
+      [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
     }
 
     impostorIndices = shuffledIndices.slice(0, 2);
@@ -404,19 +341,15 @@ function showRole() {
 }
 
 function reveal() {
-  const isImpostor =
-    allImpostorsThisRound || impostorIndices.includes(currentPlayer);
-
+  const isImpostor = allImpostorsThisRound || impostorIndices.includes(currentPlayer);
   const word = isImpostor ? chosenPair.impostor : chosenPair.real;
 
   screen.innerHTML = `
     <h1>${escapeHTML(players[currentPlayer])}</h1>
-    ${
-      isImpostor
-        ? `<h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
-           <p>Your word is only a <b>hint</b>.</p>`
-        : `<p>Your word is:</p>`
-    }
+    ${isImpostor
+      ? `<h2 style="color:#ff3333;">You are the IMPOSTOR!</h2>
+         <p>Your word is only a <b>hint</b>.</p>`
+      : "<p>Your word is:</p>"}
     <h2>${escapeHTML(word)}</h2>
     <button onclick="nextPlayer()">Hide</button>
   `;
@@ -434,39 +367,27 @@ function showVotingScreen(message = "") {
     const alreadyRevealed = revealedImpostors.includes(index);
 
     return `
-      <button
-        onclick="castVote(${index})"
-        ${alreadyRevealed ? "disabled" : ""}
-        style="
-          display:block;
-          width:100%;
-          margin:8px 0;
-          ${alreadyRevealed
-            ? "background:#bdbdbd;color:#555555;cursor:not-allowed;"
-            : ""}
-        "
-      >
+      <button onclick="castVote(${index})" ${alreadyRevealed ? "disabled" : ""}
+        style="display:block;width:100%;margin:8px 0;${alreadyRevealed
+          ? "background:#bdbdbd;color:#555;cursor:not-allowed;" : ""}">
         ${escapeHTML(name)}${alreadyRevealed ? " - IMPOSTOR REVEALED" : ""}
       </button>
     `;
   }).join("");
 
   screen.innerHTML = `
-    <h1>All words assigned</h1>
+    <h1>All Words Assigned</h1>
+    <div class="menuBox" style="text-align:center;">
+      <h2>Discussion Time</h2>
+      <p><b style="color:#ff3333;">${escapeHTML(starterPlayer)}</b> starts the conversation!</p>
+      <p>Discuss your words, give clues, and figure out who's bluffing.</p>
+    </div>
 
-    <p style="color:#ff3333;font-weight:bold;">
-      ${escapeHTML(starterPlayer)} starts the conversation!
-    </p>
-
-    <p>Discuss and give clues!</p>
-
-    <div class="menuBox">
-      <h2>Vote Out a Player</h2>
-      <p>Who do you think is the impostor?</p>
+    <div class="menuBox" style="margin-top:20px;">
+      <h2>🗳️ Vote Out a Player</h2>
+      <p>Select the person the group voted for.</p>
       ${message ? `<p style="color:#ff3333;font-weight:bold;">${escapeHTML(message)}</p>` : ""}
-      <div id="votingButtons">
-        ${voteButtons}
-      </div>
+      <div id="votingButtons">${voteButtons}</div>
     </div>
   `;
 }
@@ -477,17 +398,14 @@ function castVote(votedIndex) {
   if (revealedImpostors.includes(votedIndex)) return;
 
   const votedName = roundPlayers[votedIndex];
-  const votedIsImpostor =
-    roundAllImpostors || roundImpostorIndices.includes(votedIndex);
+  const votedIsImpostor = roundAllImpostors ||
+    roundImpostorIndices.includes(votedIndex);
 
   if (roundAllImpostors) {
     const winners = roundPlayers.filter((_, index) => index !== votedIndex);
-
-    recordWinners(
-      winners,
-      `${escapeHTML(votedName)} was voted out! Everyone else wins!`,
-      `The voted-out player was ${escapeHTML(votedName)}.`
-    );
+    recordWinners(winners,
+      `${votedName} was voted out!`,
+      "Everyone except the voted-out player wins.");
     return;
   }
 
@@ -497,7 +415,7 @@ function castVote(votedIndex) {
 
       if (revealedImpostors.length < roundImpostorIndices.length) {
         showVotingScreen(
-          `${votedName} was an impostor! But there's another impostor still in the game. Vote again!`
+          `${votedName} was an impostor! There's another impostor still in the game. Vote again!`
         );
         return;
       }
@@ -506,21 +424,16 @@ function castVote(votedIndex) {
         (_, index) => !roundImpostorIndices.includes(index)
       );
 
-      recordWinners(
-        winners,
-        "Both impostors were discovered! The players win!",
-        "Both impostors were voted out."
-      );
+      recordWinners(winners,
+        "Both impostors were discovered!",
+        "The players win!");
       return;
     }
 
     const winners = roundImpostorIndices.map(index => roundPlayers[index]);
-
-    recordWinners(
-      winners,
-      `${votedName} was a regular player! Both impostors win!`,
-      `${votedName} was voted out, so both impostors win.`
-    );
+    recordWinners(winners,
+      `${votedName} was a regular player!`,
+      "Both impostors win!");
     return;
   }
 
@@ -529,19 +442,14 @@ function castVote(votedIndex) {
       (_, index) => !roundImpostorIndices.includes(index)
     );
 
-    recordWinners(
-      winners,
-      `${votedName} was the impostor! The players win!`,
-      "The impostor was correctly identified."
-    );
+    recordWinners(winners,
+      `${votedName} was the impostor!`,
+      "The players win!");
   } else {
     const winners = roundImpostorIndices.map(index => roundPlayers[index]);
-
-    recordWinners(
-      winners,
-      `${votedName} was not the impostor! The impostor wins!`,
-      `${votedName} was voted out instead of the impostor.`
-    );
+    recordWinners(winners,
+      `${votedName} was not the impostor!`,
+      "The impostor wins!");
   }
 }
 
@@ -551,9 +459,7 @@ function recordWinners(winners, headline, detail) {
   roundOutcomeRecorded = true;
   votingFinished = true;
 
-  const winnerKeys = new Set(
-    winners.map(name => name.trim().toLowerCase())
-  );
+  const winnerKeys = new Set(winners.map(name => name.trim().toLowerCase()));
 
   roundPlayers.forEach(name => {
     const key = name.trim().toLowerCase();
@@ -575,52 +481,84 @@ function showResults(headline, detail, winners) {
 
   if (roundAllImpostors) {
     roleReveal = `
-      <h2 style="color:#ff3333;">EVERYONE WAS AN IMPOSTOR!</h2>
-      <p>All players received the impostor hint.</p>
+      <div class="menuBox" style="border:2px solid #ff3333;text-align:center;">
+        <h2 style="color:#ff3333;margin-top:0;">😈 CHAOS MODE</h2>
+        <p>Everyone was an impostor!</p>
+      </div>
     `;
   } else if (roundDoubleTrouble) {
     roleReveal = `
-      <h2 style="color:#ff3333;">DOUBLE TROUBLE!</h2>
-      <p>The impostors were:</p>
-      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
-      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[1]])}</h2>
+      <div class="menuBox" style="border:2px solid #ff3333;text-align:center;">
+        <h2 style="color:#ff3333;margin-top:0;">👥 DOUBLE TROUBLE</h2>
+        <p>The impostors were:</p>
+        <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
+        <h2>${escapeHTML(roundPlayers[roundImpostorIndices[1]])}</h2>
+      </div>
     `;
   } else {
     roleReveal = `
-      <p>The impostor was:</p>
-      <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
+      <div class="menuBox" style="border:2px solid #ff3333;text-align:center;">
+        <h2 style="color:#ff3333;margin-top:0;">🕵️ THE IMPOSTOR</h2>
+        <h2>${escapeHTML(roundPlayers[roundImpostorIndices[0]])}</h2>
+      </div>
     `;
   }
 
   screen.innerHTML = `
-    <h1>${headline}</h1>
+    <div style="text-align:center;margin:10px 0 24px;">
+      <p style="font-size:0.9rem;font-weight:bold;letter-spacing:2px;margin-bottom:8px;">
+        ROUND OVER
+      </p>
+      <h1 style="font-size:2rem;margin:0 0 12px;">${escapeHTML(headline)}</h1>
+      <p style="font-size:1.05rem;margin:0;">${escapeHTML(detail)}</p>
+    </div>
 
     ${roleReveal}
 
-    <div class="menuBox">
-      <h3>Round Results</h3>
-      <p>${detail}</p>
-      <p>Real word: <b>${escapeHTML(chosenPair.real)}</b></p>
-      <p>Impostor hint: <b>${escapeHTML(chosenPair.impostor)}</b></p>
-      <p><b>Winning side:</b> ${winners.map(escapeHTML).join(", ") || "Nobody"}</p>
+    <div class="menuBox" style="margin-top:16px;text-align:center;">
+      <h2 style="margin-top:0;">📝 The Words</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;background:#f0f0f0;padding:14px;border-radius:10px;">
+          <p style="margin:0 0 6px;font-size:0.8rem;color:#555;">REAL WORD</p>
+          <h3 style="margin:0;">${escapeHTML(chosenPair.real)}</h3>
+        </div>
+        <div style="flex:1;min-width:120px;background:#ffe5e5;padding:14px;border-radius:10px;">
+          <p style="margin:0 0 6px;font-size:0.8rem;color:#a00;">IMPOSTOR HINT</p>
+          <h3 style="margin:0;">${escapeHTML(chosenPair.impostor)}</h3>
+        </div>
+      </div>
     </div>
 
-    <button
-      id="statsToggleButton"
-      onclick="toggleStats()"
-      style="background:#888888;color:#ffffff;margin-top:12px;"
-    >Stats &amp; Streaks!</button>
-
-    <div
-      id="statsPanel"
-      class="menuBox"
-      style="display:none;margin-top:12px;"
-    >
-      <h2>Stats &amp; Streaks</h2>
-      <div id="statsTableContainer"></div>
+    <div class="menuBox" style="margin-top:16px;text-align:center;">
+      <h2 style="margin-top:0;">🏆 Winning Players</h2>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
+        ${winners.length
+          ? winners.map(name => `
+              <span style="display:inline-block;background:#ccff33;color:#000;padding:8px 12px;border-radius:20px;font-weight:bold;">
+                ${escapeHTML(name)}
+              </span>
+            `).join("")
+          : "<p>Nobody won this round.</p>"}
+      </div>
     </div>
 
-    <button onclick="playAgain()" style="margin-top:12px;">Play Again</button>
+    <div style="margin:24px auto 0;max-width:100%;text-align:center;">
+      <button id="statsToggleButton" onclick="toggleStats()"
+        style="display:block;width:50%;min-width:150px;margin:0 auto 12px;background:#888;color:#fff;font-size:0.8rem;padding:8px 10px;">
+        Stats &amp; Streaks
+      </button>
+
+      <div id="statsPanel" class="menuBox"
+        style="display:none;margin:0 0 16px;text-align:left;">
+        <h2 style="text-align:center;">Stats &amp; Streaks</h2>
+        <div id="statsTableContainer"></div>
+      </div>
+
+      <button onclick="playAgain()"
+        style="display:block;width:100%;max-width:400px;margin:0 auto;font-size:1.1rem;padding:16px;">
+        Play Again
+      </button>
+    </div>
   `;
 
   updateStatsTable();
@@ -629,18 +567,13 @@ function showResults(headline, detail, winners) {
 function toggleStats() {
   const panel = document.getElementById("statsPanel");
   const button = document.getElementById("statsToggleButton");
-
   if (!panel || !button) return;
 
   statsExpanded = !statsExpanded;
   panel.style.display = statsExpanded ? "block" : "none";
-  button.textContent = statsExpanded
-    ? "Hide Stats & Streaks"
-    : "Stats & Streaks!";
+  button.textContent = statsExpanded ? "Hide Stats & Streaks" : "Stats & Streaks";
 
-  if (statsExpanded) {
-    updateStatsTable();
-  }
+  if (statsExpanded) updateStatsTable();
 }
 
 function updateStatsTable() {
@@ -654,11 +587,11 @@ function updateStatsTable() {
     return;
   }
 
-  entries.sort((a, b) => {
-    if (b.wins !== a.wins) return b.wins - a.wins;
-    if (b.streak !== a.streak) return b.streak - a.streak;
-    return a.name.localeCompare(b.name);
-  });
+  entries.sort((a, b) =>
+    b.wins - a.wins ||
+    b.streak - a.streak ||
+    a.name.localeCompare(b.name)
+  );
 
   container.innerHTML = `
     <table style="width:100%;border-collapse:collapse;text-align:center;">
@@ -675,12 +608,8 @@ function updateStatsTable() {
             <td style="padding:10px;border-bottom:1px solid #ddd;text-align:left;">
               ${escapeHTML(player.name)}
             </td>
-            <td style="padding:10px;border-bottom:1px solid #ddd;">
-              ${player.wins}
-            </td>
-            <td style="padding:10px;border-bottom:1px solid #ddd;">
-              ${player.streak}
-            </td>
+            <td style="padding:10px;border-bottom:1px solid #ddd;">${player.wins}</td>
+            <td style="padding:10px;border-bottom:1px solid #ddd;">${player.streak}</td>
           </tr>
         `).join("")}
       </tbody>
